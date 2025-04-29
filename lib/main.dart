@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onlinegroceries/view/login/splash_view.dart';
 import 'common/color_extension.dart';
 
 void main() {
@@ -12,12 +13,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Online Groceries',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: "Gilroy",
         colorScheme: ColorScheme.fromSeed(seedColor: TColor.primary),
         useMaterial3: false,
       ),
-      home: Container(),
+      home: const SplashView(),
     );
   }
 }
