@@ -14,7 +14,7 @@ class _SplashViewState extends State<SplashView> {
   void initState() {
     // TODO: implement initState
     super.initState();
-     fireOpenApp();
+    fireOpenApp();
   }
 
   void fireOpenApp() async {
@@ -26,10 +26,9 @@ class _SplashViewState extends State<SplashView> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const WelcomeView()),
-          (route) => false,);
+      (route) => false,
+    );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +37,7 @@ class _SplashViewState extends State<SplashView> {
       backgroundColor: TColor.primary,
       body: Center(
         child: Image.asset(
-          "assets/img/splash_logo.png"
-          ,
+          "assets/img/splash_logo.png",
           width: media.width * 0.7,
         ),
       ),
