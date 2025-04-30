@@ -14,18 +14,22 @@ class _SplashViewState extends State<SplashView> {
   void initState() {
     // TODO: implement initState
     super.initState();
+     fireOpenApp();
   }
 
   void fireOpenApp() async {
     await Future.delayed(const Duration(seconds: 3));
+    startApp();
   }
 
   void startApp() {
-    Navigator.push(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const WelcomeView()),
-    );
+          (route) => false,);
   }
+
+
 
   @override
   Widget build(BuildContext context) {

@@ -21,6 +21,7 @@ class _WelcomeViewState extends State<WelcomeView> {
             height: media.height,
             fit: BoxFit.cover,
           ),
+
         ],
       ),
     );
