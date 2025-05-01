@@ -85,7 +85,11 @@ class _VerificationViewState extends State<VerificationView> {
                         InkWell(
                           borderRadius: BorderRadius.circular(30),
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const SelectLocationView()));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const SelectLocationView()));
                           },
                           child: Container(
                             width: 60,

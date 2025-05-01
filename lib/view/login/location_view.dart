@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:onlinegroceries/common_widget/round_button.dart';
+import 'package:onlinegroceries/view/login/login_view.dart';
 
 import '../../common/color_extension.dart';
 import '../../common_widget/dropdown.dart';
@@ -89,7 +90,6 @@ class _SelectLocationViewState extends State<SelectLocationView> {
                       ValueList: const ["Zone 1", "Zone 2"],
                       didChange: (sObj) {},
                     ),
-
                     SizedBox(
                       height: media.width * 0.07,
                     ),
@@ -99,13 +99,17 @@ class _SelectLocationViewState extends State<SelectLocationView> {
                       ValueList: const ["Area 1", "Area 2"],
                       didChange: (sObj) {},
                     ),
-
                     SizedBox(
                       height: media.width * 0.07,
                     ),
-RoundButton(title: "Submit", onPressed: (){
-
-})
+                    RoundButton(
+                        title: "Submit",
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const LogInView()));
+                        })
                   ],
                 ),
               ),
