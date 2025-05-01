@@ -2,6 +2,7 @@ import 'package:fl_country_code_picker/fl_country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:onlinegroceries/common/color_extension.dart';
 import 'package:onlinegroceries/common_widget/round_button.dart';
+import 'package:onlinegroceries/view/login/verification_view.dart';
 
 class SignInView extends StatefulWidget {
   const SignInView({super.key});
@@ -43,43 +44,50 @@ class _SignInViewState extends State<SignInView> {
             ],
           ),
           Image.asset("assets/img/sign_in_top.png", width: media.width),
-          SingleChildScrollView(child: SafeArea(child:
-              Column(
-                children: [
-                   SizedBox(height: media.width*1,),
-              Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-               child:Row(
-                 mainAxisAlignment: MainAxisAlignment.start,
+          SingleChildScrollView(
+            child: SafeArea(
+                child: Column(
+              children: [
+                SizedBox(
+                  height: media.width * 1,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Text(" Scan. Shop. Go.\nGet your groceries fast!", style: TextStyle(
-                        color: TColor.primaryText,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w600,
-                      ),),
+                      Text(
+                        " Scan. Shop. Go.\nGet your groceries fast!",
+                        style: TextStyle(
+                          color: TColor.primaryText,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
-                  ),),
-                  const SizedBox(height: 25,),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child:Column(
-                  children: [
-                    TextField(
+                  ),
+                ),
+                const SizedBox(
+                  height: 25,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      TextField(
                         controller: txtMobile,
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
                           prefixIcon: GestureDetector(
                             onTap: () async {
-                              final code= await countryPicker.showPicker(context: context);
+                              final code = await countryPicker.showPicker(
+                                  context: context);
                               if (code != null) {
                                 countryCode = code;
                                 if (mounted) {
-                                  setState(() {
-
-                                  });
+                                  setState(() {});
                                 }
                               }
-
                             },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -90,64 +98,82 @@ class _SignInViewState extends State<SignInView> {
                                   height: 35,
                                   child: countryCode.flagImage(),
                                 ),
-                                Text(" ${countryCode.dialCode}", style: TextStyle(
-                                  color: TColor.primaryText,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
+                                Text(
+                                  " ${countryCode.dialCode}",
+                                  style: TextStyle(
+                                    color: TColor.primaryText,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                                ),
-                                const SizedBox(width: 18,)
-
+                                const SizedBox(
+                                  width: 18,
+                                )
                               ],
                             ),
                           ),
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
-                          focusedBorder:InputBorder.none,
+                          focusedBorder: InputBorder.none,
                           hintText: "Mobile Number",
                           hintStyle: TextStyle(
                             color: TColor.placeholder,
-                            fontSize: 17,),
+                            fontSize: 17,
+                          ),
                         ),
                       ),
-                    Container(
-                      width: double.maxFinite,
-                      height: 1,
-                      color: const Color(0xff2E2E2),
-                    )
-                  ],
+                      Container(
+                        width: double.maxFinite,
+                        height: 1,
+                        color: const Color(0xff2E2E2),
+                      )
+                    ],
+                  ),
                 ),
-              ),
-                  const SizedBox(
-                    height: 25,),
-                  Text("Or connect with social media ", style: TextStyle(
+                const SizedBox(
+                  height: 25,
+                ),
+                Text(
+                  "Or connect with social media ",
+                  style: TextStyle(
                     color: TColor.secondaryText,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                  ),),
-                  const SizedBox(height: 25,),
-                  //Google Logo
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: RoundIconButton(title: "Continue with Google",
-                      icon: "assets/img/google_logo.png",
-                      bgColor: Color(0xff5383EC),
-                      onPressed: (){},
-                    ),
                   ),
-                  const SizedBox(height: 15,),
-                  //FaceBook Logo
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: RoundIconButton(title: "Continue with FaceBook",
-                      icon: "assets/img/fb_logo.png",
-                      bgColor: Color(0xff4A66AC),
-                      onPressed: (){},
-                    ),
+                ),
+                const SizedBox(
+                  height: 25,
+                ),
+                //Google Logo
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: RoundIconButton(
+                    title: "Continue with Google",
+                    icon: "assets/img/google_logo.png",
+                    bgColor: Color(0xff5383EC),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const VerificationView()));
+                    },
                   ),
-                ],
-              )
-          ),
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                //FaceBook Logo
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: RoundIconButton(
+                    title: "Continue with FaceBook",
+                    icon: "assets/img/fb_logo.png",
+                    bgColor: Color(0xff4A66AC),
+                    onPressed: () {},
+                  ),
+                ),
+              ],
+            )),
           )
         ],
       ),
