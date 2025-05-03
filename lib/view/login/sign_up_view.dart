@@ -1,20 +1,22 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:onlinegroceries/common_widget/round_button.dart';
-import 'package:onlinegroceries/view/login/sign_up_view.dart';
-import 'package:onlinegroceries/view/main_tabview/main_tab.dart';
 
 import '../../common/color_extension.dart';
 import '../../common_widget/line_textfield.dart';
+import 'login_view.dart';
 
-class LogInView extends StatefulWidget {
-  const LogInView({super.key});
+class SignUpView extends StatefulWidget {
+  const SignUpView({super.key});
 
   @override
-  State<LogInView> createState() => _LogInViewState();
+  State<SignUpView> createState() => _SignUpViewState();
 }
 
-class _LogInViewState extends State<LogInView> {
+class _SignUpViewState extends State<SignUpView> {
+  // i need to add Name,username,phone number,dob
+  TextEditingController txtUsername = TextEditingController();
   TextEditingController txtEmail = TextEditingController();
   TextEditingController txtPassword = TextEditingController();
   bool isShow = false;
@@ -70,7 +72,7 @@ class _LogInViewState extends State<LogInView> {
                       height: media.width * 0.15,
                     ),
                     Text(
-                      "Login",
+                      "Sign Up",
                       style: TextStyle(
                         color: TColor.primaryText,
                         fontSize: 26,
@@ -81,15 +83,23 @@ class _LogInViewState extends State<LogInView> {
                       height: media.width * 0.03,
                     ),
                     Text(
-                      "Enter Your emails and password ",
+                      "Enter Your credentials to continue  ",
                       style: TextStyle(
                         color: TColor.secondaryText,
-                        fontSize: 16,
+                        fontSize: 17,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     SizedBox(
                       height: media.width * 0.1,
+                    ),
+                    LineTextField(
+                      title: "Username",
+                      placeholder: "Enter your Username",
+                      controller: txtUsername,
+                    ),
+                    SizedBox(
+                      height: media.width * 0.07,
                     ),
                     LineTextField(
                       title: "Email",
@@ -116,32 +126,47 @@ class _LogInViewState extends State<LogInView> {
                         color: TColor.textTitle,
                       ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            "Forgot Password ?",
+                    SizedBox(
+                      height: media.width * 0.04,
+                    ),
+                    RichText(
+                        text: TextSpan(
                             style: TextStyle(
-                              color: TColor.primaryText,
+                              color: TColor.secondaryText,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
-                          ),
-                        )
-                      ],
-                    ),
+                            children: [
+                          const TextSpan(
+                              text: "By continuing you agree to our  "),
+                          TextSpan(
+                              text: " Terms of Service ",
+                              style: TextStyle(
+                                color: TColor.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  print("Privacy Policy Click");
+                                }),
+                          const TextSpan(text: " and  "),
+                          TextSpan(
+                              text: " Privacy Policy ",
+                              style: TextStyle(
+                                color: TColor.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  print("Terms of Service");
+                                })
+                        ])),
                     SizedBox(
                       height: media.width * 0.05,
                     ),
-                    RoundButton(title: "Log In", onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const MainTabView()));
-
-                    }),
+                    RoundButton(title: "Sign Up", onPressed: () {}),
                     SizedBox(
                       height: media.width * 0.02,
                     ),
@@ -153,15 +178,13 @@ class _LogInViewState extends State<LogInView> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const SignUpView()
-                                  )
-                              );
+                                      builder: (context) => const LogInView()));
                             },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  "Don't have an account ?",
+                                  "Already have an account ?",
                                   style: TextStyle(
                                     color: TColor.primaryText,
                                     fontSize: 14,
@@ -172,7 +195,7 @@ class _LogInViewState extends State<LogInView> {
                                   width: 8,
                                 ),
                                 Text(
-                                  "SignUp ",
+                                  "Sign In ",
                                   style: TextStyle(
                                     color: TColor.primary,
                                     fontSize: 14,
