@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../common/color_extension.dart';
+import '../../common_widget/category_cell.dart';
+import '../../common_widget/product_cell.dart';
+import '../../common_widget/section_screen.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -11,75 +14,253 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   TextEditingController txtSearch = TextEditingController();
-  bool isShow = false;
+  List exclusiveOfferArr = [
+    {
+      "name": "Organic Bananas",
+      "icon": "assets/img/banana.png",
+      "qty": "7",
+      "unit": "pcs, Prices",
+      "price": "\$1.99"
+    },
+    {
+      "name": "Red Apple",
+      "icon": "assets/img/apple_red.png",
+      "qty": "1",
+      "unit": "Kg, Prices",
+      "price": "\$4.99"
+    },
+  ];
+  List bestSellingArr = [
+    {
+      "name": "Bell Pepper Red",
+      "icon": "assets/img/bell_pepper_red.png",
+      "qty": "1",
+      "unit": "kg, Prices",
+      "price": "\$2.99"
+    },
+    {
+      "name": "Ginger",
+      "icon": "assets/img/ginger.png",
+      "qty": "250",
+      "unit": "gm, Prices",
+      "price": "\$3.99"
+    },
+  ];
+  List groceriesArr = [
+    {
+      "name": "Pulses",
+      "icon": "assets/img/pulses.png",
+      "color": Color(0xffF8A44C),
+    },
+    {
+      "name": "Rice",
+      "icon": "assets/img/rice.png",
+      "color": Color(0xff53B175),
+    },
+  ];
+  List listArr = [
+    {
+      "name": "Beef Bone",
+      "icon": "assets/img/beef_bone.png",
+      "qty": "1",
+      "unit": "kg, Prices",
+      "price": "\$4.99"
+    },
+    {
+      "name": "Broiler Chicken",
+      "icon": "assets/img/broiler_chicken.png",
+      "qty": "1",
+      "unit": "kg, Prices",
+      "price": "\$4.99"
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.sizeOf(context);
 
-    return
-        Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Image.asset(
-                "assets/img/back.png",
-                width: 20,
-                height: 20,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    "assets/img/color_logo.png",
+                    width: 25,
+                  ),
+                ],
               ),
-            ),
-          ),
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
+              const SizedBox(
+                height: 4,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    "assets/img/location.png",
+                    width: 15,
+                    height: 16,
+                  ),
+                  const SizedBox(
+                    width: 16,
+                  ),
+                  Text(
+                    "Srilanka , Maharagama",
+                    style: TextStyle(
+                      color: TColor.darkGrey,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          "assets/img/color_logo.png",
-                          width: 40,
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                      color: const Color(0xffF2F3F2),
+                      borderRadius: BorderRadius.circular(15)),
+                  alignment: Alignment.center,
+                  child: TextField(
+                    controller: txtSearch,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(vertical: 16),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(13.0),
+                        child: Image.asset(
+                          "assets/img/search.png",
+                          width: 20,
+                          height: 20,
                         ),
-                      ],
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      hintText: "Search Items",
+                      hintStyle: TextStyle(
+                          color: TColor.secondaryText,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600),
                     ),
-                    SizedBox(
-                      height: media.width * 0.05,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset("assets/img/location.png",
-                        width:15 , height: 15,),
-                        const SizedBox(width: 8,),
-                        Text(
-                          "Login",
-                          style: TextStyle(
-                            color: TColor.primaryText,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: media.width * 0.03,
-                    ),
-
-
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-        );
+              const SizedBox(
+                height: 15,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                    width: double.maxFinite,
+                    height: 115,
+                    decoration: BoxDecoration(
+                        color: const Color(0xffF2F3F2),
+                        borderRadius: BorderRadius.circular(15)),
+                    alignment: Alignment.center,
+                    child: Image.asset(
+                      "assets/img/banner_top.png",
+                      fit: BoxFit.cover,
+                    )),
+              ),
+              SectionView(
+                title: "Exclusive Offers !! ",
+                padding:
+                const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                onPressed: () {},
+              ),
+              SizedBox(
+                  height: 230,
+                  child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      itemCount: exclusiveOfferArr.length,
+                      itemBuilder: (context, index) {
+                        var pObj = exclusiveOfferArr[index] as Map? ?? {};
+                        return ProductCell(
+                          pObj: pObj,
+                          onPressed: (){},
+                          onCart: (){},
 
+                        );
+
+                      })),
+
+              SectionView(
+                title: "Grocieries",
+                padding:
+                const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                onPressed: () {},
+              ),
+              SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      itemCount: groceriesArr.length,
+                      itemBuilder: (context, index) {
+                        var pObj = groceriesArr[index] as Map? ?? {};
+                        return CategoryCell(
+                          pObj: pObj,
+                          onPressed: (){},
+
+                        );
+
+                      })),
+
+              SectionView(
+                title: "Best Selling ",
+                padding:
+                const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                onPressed: () {},
+              ),
+              SizedBox(
+                  height: 230,
+                  child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      itemCount: bestSellingArr.length,
+                      itemBuilder: (context, index) {
+                        var pObj = bestSellingArr[index] as Map? ?? {};
+                        return ProductCell(
+                          pObj: pObj,
+                          onPressed: (){},
+                          onCart: (){},
+
+                        );
+
+                      })),
+               const SizedBox( height: 15,),
+              SizedBox(
+                  height: 230,
+                  child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      itemCount: listArr.length,
+                      itemBuilder: (context, index) {
+                        var pObj = listArr[index] as Map? ?? {};
+                        return ProductCell(
+                          pObj: pObj,
+                          onPressed: (){},
+                          onCart: (){},
+
+                        );
+
+                      })),
+              const SizedBox( height: 20,),
+
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

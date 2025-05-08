@@ -6,4 +6,5 @@ class TColor {
   static Color get secondaryText => const Color(0xff828282);
   static Color get textTitle => const Color(0xff7C7C7C);
   static Color get placeholder => const Color(0xffB1B1B1);
+  static Color get darkGrey => const Color(0xff030303);
 }

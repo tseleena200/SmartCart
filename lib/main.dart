@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onlinegroceries/view/login/splash_view.dart';
+import 'package:onlinegroceries/view/main_tabview/main_tab.dart';
 import 'common/color_extension.dart';
 
 void main() {
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: TColor.primary),
         useMaterial3: false,
       ),
-      home: const SplashView(),
+      home: const MainTabView(),
     );
   }
 }
