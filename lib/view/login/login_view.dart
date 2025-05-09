@@ -135,13 +135,14 @@ class _LogInViewState extends State<LogInView> {
                     SizedBox(
                       height: media.width * 0.05,
                     ),
-                    RoundButton(title: "Log In", onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const MainTabView()));
-
-                    }),
+                    RoundButton(
+                        title: "Log In",
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const MainTabView()));
+                        }),
                     SizedBox(
                       height: media.width * 0.02,
                     ),
@@ -153,9 +154,8 @@ class _LogInViewState extends State<LogInView> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const SignUpView()
-                                  )
-                              );
+                                      builder: (context) =>
+                                          const SignUpView()));
                             },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,

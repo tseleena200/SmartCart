@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onlinegroceries/view/home/product_details_screen.dart';
 
 import '../../common/color_extension.dart';
 import '../../common_widget/category_cell.dart';
@@ -174,7 +175,7 @@ class _HomeViewState extends State<HomeView> {
               SectionView(
                 title: "Exclusive Offers !! ",
                 padding:
-                const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 onPressed: () {},
               ),
               SizedBox(
@@ -187,17 +188,20 @@ class _HomeViewState extends State<HomeView> {
                         var pObj = exclusiveOfferArr[index] as Map? ?? {};
                         return ProductCell(
                           pObj: pObj,
-                          onPressed: (){},
-                          onCart: (){},
-
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ProductDetails()));
+                          },
+                          onCart: () {},
                         );
-
                       })),
-
               SectionView(
                 title: "Grocieries",
                 padding:
-                const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 onPressed: () {},
               ),
               SizedBox(
@@ -210,16 +214,13 @@ class _HomeViewState extends State<HomeView> {
                         var pObj = groceriesArr[index] as Map? ?? {};
                         return CategoryCell(
                           pObj: pObj,
-                          onPressed: (){},
-
+                          onPressed: () {},
                         );
-
                       })),
-
               SectionView(
                 title: "Best Selling ",
                 padding:
-                const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 onPressed: () {},
               ),
               SizedBox(
@@ -232,13 +233,19 @@ class _HomeViewState extends State<HomeView> {
                         var pObj = bestSellingArr[index] as Map? ?? {};
                         return ProductCell(
                           pObj: pObj,
-                          onPressed: (){},
-                          onCart: (){},
-
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ProductDetails()));
+                          },
+                          onCart: () {},
                         );
-
                       })),
-               const SizedBox( height: 15,),
+              const SizedBox(
+                height: 15,
+              ),
               SizedBox(
                   height: 230,
                   child: ListView.builder(
@@ -249,14 +256,19 @@ class _HomeViewState extends State<HomeView> {
                         var pObj = listArr[index] as Map? ?? {};
                         return ProductCell(
                           pObj: pObj,
-                          onPressed: (){},
-                          onCart: (){},
-
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ProductDetails()));
+                          },
+                          onCart: () {},
                         );
-
                       })),
-              const SizedBox( height: 20,),
-
+              const SizedBox(
+                height: 20,
+              ),
             ],
           ),
         ),
