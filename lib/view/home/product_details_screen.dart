@@ -228,7 +228,8 @@ class _ProductDetailsState extends State<ProductDetails> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 8),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
                         height: 25,
                         decoration: BoxDecoration(
                           color: TColor.placeholder.withOpacity(0.5),
@@ -277,27 +278,27 @@ class _ProductDetailsState extends State<ProductDetails> {
                           ),
                         ),
                       ),
-        IgnorePointer(
-          ignoring: true,
-          child: RatingBar.builder(
-            initialRating: 5,
-            minRating: 1,
-            direction: Axis.horizontal,
-            allowHalfRating: true,
-            itemCount: 5,
-            itemSize:15 ,
-            itemPadding: const EdgeInsets.symmetric(horizontal: 1.0),
-            itemBuilder: (context, _) => const Icon(
-              Icons.star,
-              color:Color(0xffF3603F),
-            ),
-            onRatingUpdate: (rating) {
-              print(rating);
-            },
-          ),
-        ),
-
-        IconButton(
+                      IgnorePointer(
+                        ignoring: true,
+                        child: RatingBar.builder(
+                          initialRating: 5,
+                          minRating: 1,
+                          direction: Axis.horizontal,
+                          allowHalfRating: true,
+                          itemCount: 5,
+                          itemSize: 15,
+                          itemPadding:
+                              const EdgeInsets.symmetric(horizontal: 1.0),
+                          itemBuilder: (context, _) => const Icon(
+                            Icons.star,
+                            color: Color(0xffF3603F),
+                          ),
+                          onRatingUpdate: (rating) {
+                            print(rating);
+                          },
+                        ),
+                      ),
+                      IconButton(
                         onPressed: () {},
                         icon: Image.asset(
                           "assets/img/next.png",
