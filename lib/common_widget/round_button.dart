@@ -26,19 +26,20 @@ class RoundButton extends StatelessWidget {
       ),
     );
   }
-
 }
+
 class RoundIconButton extends StatelessWidget {
   final String title;
   final String icon;
   final Color bgColor;
   final VoidCallback onPressed;
 
-  const RoundIconButton({super.key,
-    required this.title,
-    required this.icon,
-    required this.bgColor,
-    required this.onPressed});
+  const RoundIconButton(
+      {super.key,
+      required this.title,
+      required this.icon,
+      required this.bgColor,
+      required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +52,15 @@ class RoundIconButton extends StatelessWidget {
       color: bgColor,
       child: Row(
         children: [
-          Image.asset(icon,width: 20,height: 20,fit: BoxFit.contain,),
-          const SizedBox(width: 30,),
+          Image.asset(
+            icon,
+            width: 20,
+            height: 20,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(
+            width: 30,
+          ),
           Text(
             title,
             style: const TextStyle(
@@ -61,9 +69,27 @@ class RoundIconButton extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                  color: TColor.placeholder.withOpacity(0.5), width: 1),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
-
 }

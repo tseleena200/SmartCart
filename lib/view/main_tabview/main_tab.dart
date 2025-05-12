@@ -3,6 +3,7 @@ import 'package:onlinegroceries/common/color_extension.dart';
 import 'package:onlinegroceries/view/home/home_screen.dart';
 
 import '../explore/explore_screen.dart';
+import '../my_cart/cart_screen.dart';
 
 class MainTabView extends StatefulWidget {
   const MainTabView({super.key});
@@ -41,7 +42,7 @@ class _MainTabViewState extends State<MainTabView>
           children: [
             const HomeView(),
             const ExploreView(),
-            Container(),
+            const MyCartView(),
             Container(),
             Container(),
           ],
