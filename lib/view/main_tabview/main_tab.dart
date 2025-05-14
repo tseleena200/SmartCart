@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:onlinegroceries/common/color_extension.dart';
 import 'package:onlinegroceries/view/home/home_screen.dart';
 
+import '../account/account_screen.dart';
 import '../explore/explore_screen.dart';
+import '../favourite/favourite_screen.dart';
 import '../my_cart/cart_screen.dart';
 
 class MainTabView extends StatefulWidget {
@@ -43,8 +45,8 @@ class _MainTabViewState extends State<MainTabView>
             const HomeView(),
             const ExploreView(),
             const MyCartView(),
-            Container(),
-            Container(),
+            const FavouriteView(),
+            const AccountView(),
           ],
         ),
         bottomNavigationBar: Container(

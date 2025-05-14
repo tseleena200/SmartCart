@@ -4,6 +4,8 @@ import 'package:onlinegroceries/common_widget/checkout_row.dart';
 
 import '../../common/color_extension.dart';
 import '../../common_widget/round_button.dart';
+import 'error_screen.dart';
+import 'order_completed_screen.dart';
 
 class CheckoutView extends StatefulWidget {
   const CheckoutView({super.key});
@@ -100,7 +102,16 @@ class _CheckoutViewState extends State<CheckoutView> {
           CheckoutRow(
             title: "Total Cost",
             value: "\$10.96",
-            onPressed: () {},
+            onPressed: () {
+
+              showDialog(context: context, builder: (context){
+                return const Dialog(
+                  backgroundColor: Colors.transparent,
+                  insetPadding:const EdgeInsets.symmetric(horizontal: 20,) ,
+                  child: ErrorView(),
+                );
+              });
+            },
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
@@ -138,7 +149,12 @@ class _CheckoutViewState extends State<CheckoutView> {
                         })
                 ])),
           ),
-          RoundButton(title: "Place Order", onPressed: () {}),
+          RoundButton(title: "Place Order",
+              onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context)=> const OrderCompletedView()));
+
+
+          }),
           const SizedBox(height: 15,),
         ],
       ),
