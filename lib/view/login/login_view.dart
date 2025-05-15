@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-
-
 import 'package:onlinegroceries/common_widget/round_button.dart';
+import 'package:onlinegroceries/view/login/forgot_password_view.dart';
 import 'package:onlinegroceries/view/login/sign_up_view.dart';
-
-
-
-import 'forgot_password_view.dart';
+import 'package:onlinegroceries/view/login/verification_view.dart';
 
 class LogInView extends StatefulWidget {
   const LogInView({super.key});
@@ -16,17 +12,17 @@ class LogInView extends StatefulWidget {
 }
 
 class _LogInViewState extends State<LogInView> {
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController inputController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isRememberMe = false;
   bool isPasswordVisible = false;
+  bool isEmailSelected = true;
 
-  final Color themeColor = const Color(0xFF03452C); // Dark Burgundy
+  final Color themeColor = const Color(0xFF03452C);
 
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context).size;
-
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -38,12 +34,11 @@ class _LogInViewState extends State<LogInView> {
             children: [
               const SizedBox(height: 20),
 
-              // App Logo
+              // Logo
               Center(
                 child: Image.asset(
                   "assets/img/logo-transparent.png",
                   height: 120,
-
                 ),
               ),
 
@@ -66,75 +61,34 @@ class _LogInViewState extends State<LogInView> {
                   style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ),
-              const SizedBox(height: 32),
 
-              // Email Field
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: "Email / Phone number",
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
+              const SizedBox(height: 24),
 
-              const SizedBox(height: 16),
-
-              // Password Field
-              TextField(
-                controller: passwordController,
-                obscureText: !isPasswordVisible,
-                decoration: InputDecoration(
-                  labelText: "Password",
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() => isPasswordVisible = !isPasswordVisible);
-                    },
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Remember Me + Forgot Password
+              // Toggle: Email or Phone
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: isRememberMe,
-                        activeColor: themeColor,
-                        onChanged: (val) {
-                          setState(() => isRememberMe = val!);
-                        },
+                  GestureDetector(
+                    onTap: () => setState(() => isEmailSelected = true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isEmailSelected ? Colors.grey.shade300 : Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const Text("Remember me"),
-                    ],
+                      child: const Text("Email"),
+                    ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ForgotPasswordView()),
-                      );
-                    },
-                    child: Text(
-                      "Forgot password?",
-                      style: TextStyle(color: themeColor),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => setState(() => isEmailSelected = false),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: !isEmailSelected ? Colors.grey.shade300 : Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text("Phone"),
                     ),
                   ),
                 ],
@@ -142,21 +96,104 @@ class _LogInViewState extends State<LogInView> {
 
               const SizedBox(height: 24),
 
-              // Sign In Button
+              // Email or Phone field
+              TextField(
+                controller: inputController,
+                keyboardType:
+                isEmailSelected ? TextInputType.emailAddress : TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: isEmailSelected ? "Email" : "Phone Number",
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+
+              if (isEmailSelected) ...[
+                const SizedBox(height: 16),
+
+                // Password Field
+                TextField(
+                  controller: passwordController,
+                  obscureText: !isPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() => isPasswordVisible = !isPasswordVisible);
+                      },
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Remember + Forgot Password
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isRememberMe,
+                          activeColor: themeColor,
+                          onChanged: (val) {
+                            setState(() => isRememberMe = val!);
+                          },
+                        ),
+                        const Text("Remember me"),
+                      ],
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ForgotPasswordView()),
+                        );
+                      },
+                      child: Text(
+                        "Forgot password?",
+                        style: TextStyle(color: themeColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              const SizedBox(height: 24),
+
+              // Sign In
               RoundButton(
                 title: "Sign In",
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const  SignUpView()),
-                  );
-
+                  if (isEmailSelected) {
+                    // Handle email login (placeholder)
+                    debugPrint("Login with Email: ${inputController.text}");
+                  } else {
+                    // Go to OTP screen (no backend yet)
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const VerificationView()),
+                    );
+                  }
                 },
               ),
 
               const SizedBox(height: 24),
 
-              // Register Link
+              // Register
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -176,7 +213,7 @@ class _LogInViewState extends State<LogInView> {
                         decoration: TextDecoration.underline,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
 
@@ -196,7 +233,7 @@ class _LogInViewState extends State<LogInView> {
 
               const SizedBox(height: 16),
 
-              // Social Icons
+              // Social
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

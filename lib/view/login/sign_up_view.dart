@@ -156,43 +156,41 @@ class _SignUpViewState extends State<SignUpView> {
                       const SizedBox(height: 16),
 
                       // Password
-                      TextField(
-                        controller: passwordController,
-                        obscureText: !isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: "Password",
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              isPasswordVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
+                      if (isEmailSelected) ...[
+                        TextField(
+                          controller: passwordController,
+                          obscureText: !isPasswordVisible,
+                          decoration: InputDecoration(
+                            labelText: "Password",
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                isPasswordVisible = !isPasswordVisible;
-                              });
-                            },
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  isPasswordVisible = !isPasswordVisible;
+                                });
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Password rules
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: const [
-                          Text("min 8 letters", style: TextStyle(fontSize: 12)),
-                          Text("1 capital letter", style: TextStyle(fontSize: 12)),
-                          Text("1 number", style: TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: const [
+                            Text("min 8 letters", style: TextStyle(fontSize: 12)),
+                            Text("1 capital letter", style: TextStyle(fontSize: 12)),
+                            Text("1 number", style: TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                      ],
 
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
