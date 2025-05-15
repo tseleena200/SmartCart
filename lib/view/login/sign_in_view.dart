@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:onlinegroceries/common/color_extension.dart';
 import 'package:onlinegroceries/common_widget/round_button.dart';
 import 'package:onlinegroceries/view/login/verification_view.dart';
+import 'package:onlinegroceries/view/login/sign_up_view.dart';
+
+import 'login_view.dart';
 
 class SignInView extends StatefulWidget {
   const SignInView({super.key});
@@ -12,169 +15,247 @@ class SignInView extends StatefulWidget {
 }
 
 class _SignInViewState extends State<SignInView> {
-  TextEditingController txtMobile = TextEditingController();
-  FlCountryCodePicker countryPicker = const FlCountryCodePicker();
+  final TextEditingController txtMobile = TextEditingController();
+  final FlCountryCodePicker countryPicker = const FlCountryCodePicker();
   late CountryCode countryCode;
 
   @override
   void initState() {
     super.initState();
-    countryCode = countryPicker.countryCodes
-        .firstWhere((element) => element.name == "United Kingdom");
+    countryCode = countryPicker.countryCodes.firstWhere(
+          (element) => element.name == "Sri Lanka",
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    var media = MediaQuery.sizeOf(context);
+    final media = MediaQuery.sizeOf(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        alignment: Alignment.topCenter,
+      body: Column(
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Image.asset(
-                "assets/img/bottom_bg.png",
-                width: media.width,
-                height: media.height,
-                fit: BoxFit.cover,
-              ),
-            ],
+          // Top banner image
+          SizedBox(
+            height: media.height * 0.35,
+            width: double.infinity,
+            child: Image.asset(
+              "assets/img/sign_in_top.png",
+              fit: BoxFit.cover,
+            ),
           ),
-          Image.asset("assets/img/sign_in_top.png", width: media.width),
-          SingleChildScrollView(
-            child: SafeArea(
+
+          // Card-style content area
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 15,
+                    offset: const Offset(0, -5),
+                  )
+                ],
+              ),
+              child: SingleChildScrollView(
                 child: Column(
-              children: [
-                SizedBox(
-                  height: media.width * 1,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        " Scan. Shop. Go.\nGet your groceries fast!",
-                        style: TextStyle(
-                          color: TColor.primaryText,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w600,
-                        ),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Scan. Shop. Go.",
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Get your groceries fast!",
+                      style: TextStyle(fontSize: 16, color: TColor.secondaryText),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Phone input field
+                    Text(
+                      "Mobile Number",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: TColor.primaryText,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 25,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: txtMobile,
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          prefixIcon: GestureDetector(
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Row(
+                        children: [
+                          GestureDetector(
                             onTap: () async {
-                              final code = await countryPicker.showPicker(
-                                  context: context);
+                              final code = await countryPicker.showPicker(context: context);
                               if (code != null) {
-                                countryCode = code;
-                                if (mounted) {
-                                  setState(() {});
-                                }
+                                setState(() {
+                                  countryCode = code;
+                                });
                               }
                             },
                             child: Row(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Container(
-                                  margin: const EdgeInsets.only(right: 8),
-                                  width: 35,
-                                  height: 35,
-                                  child: countryCode.flagImage(),
-                                ),
+                                countryCode.flagImage(),
+                                const SizedBox(width: 6),
                                 Text(
-                                  " ${countryCode.dialCode}",
-                                  style: TextStyle(
-                                    color: TColor.primaryText,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  countryCode.dialCode,
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
                                 ),
-                                const SizedBox(
-                                  width: 18,
-                                )
+                                const Icon(Icons.keyboard_arrow_down_rounded),
+                                const SizedBox(width: 10),
                               ],
                             ),
                           ),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          hintText: "Mobile Number",
-                          hintStyle: TextStyle(
-                            color: TColor.placeholder,
-                            fontSize: 17,
+                          Expanded(
+                            child: TextField(
+                              controller: txtMobile,
+                              keyboardType: TextInputType.phone,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintText: "Enter your mobile number",
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                      Container(
-                        width: double.maxFinite,
-                        height: 1,
-                        color: const Color(0xff2E2E2),
-                      )
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 25,
-                ),
-                Text(
-                  "Or connect with social media ",
-                  style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(
-                  height: 25,
-                ),
-                //Google Logo
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: RoundIconButton(
-                    title: "Continue with Google",
-                    icon: "assets/img/google_logo.png",
-                    bgColor: Color(0xff5383EC),
-                    onPressed: () {
-                      Navigator.push(
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    // Divider with text
+                    Row(
+                      children: const [
+                        Expanded(child: Divider()),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text("OR"),
+                        ),
+                        Expanded(child: Divider()),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Google button
+                    _socialButton(
+                      title: "Continue with Google",
+                      iconPath: "assets/img/google_logo.png",
+                      color: const Color(0xff056843),
+                      onPressed: () {
+                        Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => const VerificationView()));
-                    },
-                  ),
+                          MaterialPageRoute(builder: (context) => const VerificationView()),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Facebook button
+                    _socialButton(
+                      title: "Continue with Facebook",
+                      iconPath: "assets/img/fb_logo.png",
+                      color: const Color(0xff4A66AC),
+                      onPressed: () {},
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    // Login / Register navigation
+                    Center(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("Prefer using email? "),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const LogInView()),
+                                  );
+                                },
+                                child: Text(
+                                  "Login here",
+                                  style: TextStyle(
+                                    color: TColor.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("Don't have an account? "),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const SignUpView()),
+                                  );
+                                },
+                                child: Text(
+                                  "Register",
+                                  style: TextStyle(
+                                    color: TColor.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
-                //FaceBook Logo
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: RoundIconButton(
-                    title: "Continue with FaceBook",
-                    icon: "assets/img/fb_logo.png",
-                    bgColor: Color(0xff4A66AC),
-                    onPressed: () {},
-                  ),
-                ),
-              ],
-            )),
-          )
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _socialButton({
+    required String title,
+    required String iconPath,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        minimumSize: const Size.fromHeight(50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 3,
+      ),
+      onPressed: onPressed,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(iconPath, height: 24, width: 24),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );

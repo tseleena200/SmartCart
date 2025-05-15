@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'package:onlinegroceries/common_widget/round_button.dart';
 
-import '../../common/color_extension.dart';
-import '../../common_widget/line_textfield.dart';
+import 'package:onlinegroceries/common_widget/round_button.dart';
+import 'package:onlinegroceries/view/login/sign_up_view.dart';
+
+
+
+import 'forgot_password_view.dart';
 
 class LogInView extends StatefulWidget {
   const LogInView({super.key});
@@ -13,168 +16,216 @@ class LogInView extends StatefulWidget {
 }
 
 class _LogInViewState extends State<LogInView> {
-  TextEditingController txtEmail = TextEditingController();
-  TextEditingController txtPassword = TextEditingController();
-  bool isShow = false;
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isRememberMe = false;
+  bool isPasswordVisible = false;
+
+  final Color themeColor = const Color(0xFF03452C); // Dark Burgundy
 
   @override
   Widget build(BuildContext context) {
-    var media = MediaQuery.sizeOf(context);
+    final media = MediaQuery.of(context).size;
 
-    return Stack(
-      children: [
-        Container(
-          color: Colors.white,
-          child: Image.asset(
-            "assets/img/bottom_bg.png",
-            width: media.width,
-            height: media.height,
-            fit: BoxFit.cover,
-          ),
-        ),
-        Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Image.asset(
-                "assets/img/back.png",
-                width: 20,
-                height: 20,
-              ),
-            ),
-          ),
-          backgroundColor: Colors.transparent,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          "assets/img/color_logo.png",
-                          width: 40,
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: media.width * 0.15,
-                    ),
-                    Text(
-                      "Login",
-                      style: TextStyle(
-                        color: TColor.primaryText,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(
-                      height: media.width * 0.03,
-                    ),
-                    Text(
-                      "Enter Your emails and password ",
-                      style: TextStyle(
-                        color: TColor.secondaryText,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(
-                      height: media.width * 0.1,
-                    ),
-                    LineTextField(
-                      title: "Email",
-                      placeholder: "Enter your email address",
-                      controller: txtEmail,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    SizedBox(
-                      height: media.width * 0.07,
-                    ),
-                    LineTextField(
-                      title: "Password",
-                      placeholder: "Enter your Password",
-                      controller: txtPassword,
-                      obscureText: isShow,
-                      right: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            isShow = !isShow;
-                          });
-                        },
-                        icon: Icon(
-                            !isShow ? Icons.visibility_off : Icons.visibility),
-                        color: TColor.textTitle,
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            "Forgot Password ?",
-                            style: TextStyle(
-                              color: TColor.primaryText,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                    SizedBox(
-                      height: media.width * 0.05,
-                    ),
-                    RoundButton(title: "Log In", onPressed: () {}),
-                    SizedBox(
-                      height: media.width * 0.02,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton(
-                            onPressed: () {},
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  "Don't have an account ?",
-                                  style: TextStyle(
-                                    color: TColor.primaryText,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                Text(
-                                  "SignUp ",
-                                  style: TextStyle(
-                                    color: TColor.primary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ))
-                      ],
-                    ),
-                  ],
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 20),
+
+              // App Logo
+              Center(
+                child: Image.asset(
+                  "assets/img/logo-transparent.png",
+                  height: 120,
+
                 ),
               ),
-            ),
+
+              const SizedBox(height: 20),
+
+              // Title
+              const Center(
+                child: Text(
+                  "Welcome Back!",
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Center(
+                child: Text(
+                  "Please sign in to continue",
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Email Field
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: "Email / Phone number",
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Password Field
+              TextField(
+                controller: passwordController,
+                obscureText: !isPasswordVisible,
+                decoration: InputDecoration(
+                  labelText: "Password",
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() => isPasswordVisible = !isPasswordVisible);
+                    },
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Remember Me + Forgot Password
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: isRememberMe,
+                        activeColor: themeColor,
+                        onChanged: (val) {
+                          setState(() => isRememberMe = val!);
+                        },
+                      ),
+                      const Text("Remember me"),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ForgotPasswordView()),
+                      );
+                    },
+                    child: Text(
+                      "Forgot password?",
+                      style: TextStyle(color: themeColor),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Sign In Button
+              RoundButton(
+                title: "Sign In",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const  SignUpView()),
+                  );
+
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              // Register Link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Are you new? "),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignUpView()),
+                      );
+                    },
+                    child: Text(
+                      "Register",
+                      style: TextStyle(
+                        color: themeColor,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+
+              const SizedBox(height: 32),
+
+              // OR Divider
+              Row(
+                children: const [
+                  Expanded(child: Divider(thickness: 1)),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text("OR"),
+                  ),
+                  Expanded(child: Divider(thickness: 1)),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Social Icons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildSocialIcon("assets/img/google.png"),
+                  const SizedBox(width: 16),
+                  _buildSocialIcon("assets/img/facebook-logo-png.png"),
+                  const SizedBox(width: 16),
+                  _buildSocialIcon("assets/img/appleidl.png"),
+                ],
+              ),
+            ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildSocialIcon(String assetPath) {
+    return InkWell(
+      onTap: () {},
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Image.asset(assetPath, width: 24, height: 24),
+      ),
     );
   }
 }

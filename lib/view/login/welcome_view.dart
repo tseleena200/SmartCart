@@ -13,7 +13,6 @@ class WelcomeView extends StatefulWidget {
 class _WelcomeViewState extends State<WelcomeView> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
   }
@@ -25,59 +24,66 @@ class _WelcomeViewState extends State<WelcomeView> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Image.asset(
-            "assets/img/welcomescreen.jpeg",
+          // Background Image
+          SizedBox(
             width: media.width,
             height: media.height,
-            fit: BoxFit.cover,
-            alignment: Alignment(0.13, 0),
+            child: Image.asset(
+              "assets/img/welcomescreen.jpeg",
+              fit: BoxFit.cover,
+              alignment: const Alignment(0.13, 0),
+            ),
           ),
+
+          // Dark Overlay
+          Container(
+            width: media.width,
+            height: media.height,
+            color: Colors.black.withOpacity(0.45),
+          ),
+
+          // Main Content
           SafeArea(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                // App Logo
                 Image.asset(
                   "assets/img/app_logo.png",
-                  width: 60,
-                  height: 60,
+                  width: 70,
+                  height: 70,
                 ),
-                const SizedBox(
-                  height: 8,
-                ), //space
-                //First Row
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "   Welcome\n to SmartCart",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 48,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 16),
+
+                // Welcome Text
+                const Text(
+                  "Welcome to\nSmartCart",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    height: 1.3,
+                  ),
                 ),
 
-                //Second Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Scan. Shop. Go.",
-                      style: TextStyle(
-                        color: Color(0xFFFFFFFF).withAlpha(500),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 8),
+
+                // Tagline
+                Text(
+                  "Scan. Shop. Go.",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                const SizedBox(
-                  height: 20,
-                ), //space
+
+                const SizedBox(height: 32),
+
+                // Get Started Button
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: RoundButton(
                     title: "Get Started",
                     onPressed: () {
@@ -91,9 +97,7 @@ class _WelcomeViewState extends State<WelcomeView> {
                   ),
                 ),
 
-                const SizedBox(
-                  height: 46,
-                ), //space between the text and buttons
+                const SizedBox(height: 46),
               ],
             ),
           ),
