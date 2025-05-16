@@ -1,5 +1,7 @@
 import 'package:fl_country_code_picker/fl_country_code_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:onlinegroceries/common/color_extension.dart';
 import 'package:onlinegroceries/common_widget/round_button.dart';
 import 'package:onlinegroceries/view/login/verification_view.dart';
@@ -152,12 +154,13 @@ class _SignInViewState extends State<SignInView> {
                       title: "Continue with Google",
                       iconPath: "assets/img/google_logo.png",
                       color: const Color(0xff056843),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const VerificationView()),
-                        );
-                      },
+                        onPressed: () {
+                          Get.snackbar("Coming Soon", "Google Sign-In will be added later.",
+                            backgroundColor: TColor.primary,
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        }
                     ),
 
                     const SizedBox(height: 16),

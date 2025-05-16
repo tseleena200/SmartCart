@@ -183,10 +183,10 @@ class _LogInViewState extends State<LogInView> {
                     debugPrint("Login with Email: ${inputController.text}");
                   } else {
                     // Go to OTP screen (no backend yet)
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const VerificationView()),
-                    );
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => const VerificationView()),
+                    // );
                   }
                 },
               ),

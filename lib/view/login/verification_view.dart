@@ -1,11 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:onlinegroceries/common_widget/line_textfield.dart';
-
 import '../../common/color_extension.dart';
-import 'location_view.dart';
+import '../../controllers/auth_controller.dart';
 
 class VerificationView extends StatefulWidget {
-  const VerificationView({super.key});
+  final String verificationId;
+  final String phone;
+  final String firstName;
+  final String lastName;
+  final String dob;
+  final String branch;
+  final bool receivePromos;
+
+  const VerificationView({
+    super.key,
+    required this.verificationId,
+    required this.phone,
+    required this.firstName,
+    required this.lastName,
+    required this.dob,
+    required this.branch,
+    required this.receivePromos,
+  });
 
   @override
   State<VerificationView> createState() => _VerificationViewState();
@@ -13,6 +30,31 @@ class VerificationView extends StatefulWidget {
 
 class _VerificationViewState extends State<VerificationView> {
   TextEditingController txtOTP = TextEditingController();
+
+  int _resendCountdown = 30;
+  bool _canResend = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    _resendCountdown = 30;
+    _canResend = false;
+
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (_resendCountdown == 0) {
+        setState(() => _canResend = true);
+        return false;
+      } else {
+        setState(() => _resendCountdown--);
+        return true;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +96,7 @@ class _VerificationViewState extends State<VerificationView> {
                   children: [
                     SizedBox(height: media.width * 0.1),
                     Text(
-                      "Enter Your 4 - Digit Code",
+                      "Enter Your 6 - Digit Code",
                       style: TextStyle(
                         color: TColor.primaryText,
                         fontSize: 26,
@@ -64,19 +106,35 @@ class _VerificationViewState extends State<VerificationView> {
                     const SizedBox(height: 15),
                     LineTextField(
                       title: "Code",
-                      placeholder: "- - - -",
+                      placeholder: "- - - - - -",
                       controller: txtOTP,
+                      keyboardType: TextInputType.number,
                     ),
                     SizedBox(height: media.width * 0.3),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextButton(
-                          onPressed: () {},
+                          onPressed: _canResend
+                              ? () {
+                            AuthController.instance.sendOTP(
+                              phoneNumber: widget.phone,
+                              firstName: widget.firstName,
+                              lastName: widget.lastName,
+                              dob: widget.dob,
+                              branch: widget.branch,
+                              receivePromos: widget.receivePromos,
+                            );
+                            _startCountdown();
+                          }
+                              : null,
                           child: Text(
-                            "Resend Code",
+                            _canResend
+                                ? "Resend Code"
+                                : "Resend in $_resendCountdown s",
                             style: TextStyle(
-                              color: TColor.primary,
+                              color:
+                              _canResend ? TColor.primary : Colors.grey,
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
                             ),
@@ -85,19 +143,37 @@ class _VerificationViewState extends State<VerificationView> {
                         InkWell(
                           borderRadius: BorderRadius.circular(30),
                           onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SelectLocationView()));
+                            final otp = txtOTP.text.trim();
+
+                            if (otp.length != 6) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                  Text("Please enter the 6-digit OTP"),
+                                ),
+                              );
+                              return;
+                            }
+
+                            AuthController.instance.verifyAndRegisterOTP(
+                              verificationId: widget.verificationId,
+                              smsCode: otp,
+                              phone: widget.phone,
+                              firstName: widget.firstName,
+                              lastName: widget.lastName,
+                              dob: widget.dob,
+                              branch: widget.branch,
+                              receivePromos: widget.receivePromos,
+                            );
                           },
                           child: Container(
                             width: 60,
                             height: 60,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                                color: TColor.primary,
-                                borderRadius: BorderRadius.circular(30)),
+                              color: TColor.primary,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
                             child: Image.asset(
                               "assets/img/next.png",
                               width: 20,

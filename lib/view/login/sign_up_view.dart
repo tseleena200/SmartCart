@@ -1,10 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../common_widget/round_button.dart';
 import '../../controllers/auth_controller.dart';
 import 'login_view.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
@@ -121,13 +124,13 @@ class _SignUpViewState extends State<SignUpView> {
                             "Phone Number",
                             phoneController,
                             inputType: TextInputType.phone,
+                            inputFormatters: [PhoneInputFormatter()], // <-- Add this
+                            hintText: "+94 75 000 0000",              // <-- Add this
                             validator: (value) {
                               if (value == null || value.isEmpty)
                                 return 'Phone number is required';
-                              if (!RegExp(r'^(?:7|0|(?:\+94))[0-9]{9,10}$')
-                                  .hasMatch(value)) {
-                                return 'Enter a valid Sri Lankan number';
-                              }
+                              if (!RegExp(r'^\+94\s?\d{2}\s?\d{3}\s?\d{4}$').hasMatch(value))
+                                return 'Enter a valid number like +94 75 000 0000';
                               return null;
                             },
                           ),
@@ -296,18 +299,31 @@ class _SignUpViewState extends State<SignUpView> {
                                 return;
                               }
 
-                              AuthController.instance.registerWithEmail(
-                                email: emailController.text.trim(),
-                                password: passwordController.text.trim(),
-                                firstName: firstNameController.text.trim(),
-                                lastName: lastNameController.text.trim(),
-                                phone: phoneController.text.trim(),
-                                dob: dobController.text.trim(),
-                                branch: selectedBranch!,
-                                receivePromos: receivePromos,
-                              );
+                              if (isEmailSelected) {
+                                // Email-based registration
+                                AuthController.instance.registerWithEmail(
+                                  email: emailController.text.trim(),
+                                  password: passwordController.text.trim(),
+                                  firstName: firstNameController.text.trim(),
+                                  lastName: lastNameController.text.trim(),
+                                  phone: phoneController.text.trim(),
+                                  dob: dobController.text.trim(),
+                                  branch: selectedBranch!,
+                                  receivePromos: receivePromos,
+                                );
+                              } else {
+                                // Phone-based OTP registration
+                                AuthController.instance.sendOTP(
+                                  phoneNumber: phoneController.text.trim(),
+                                  firstName: firstNameController.text.trim(),
+                                  lastName: lastNameController.text.trim(),
+                                  dob: dobController.text.trim(),
+                                  branch: selectedBranch!,
+                                  receivePromos: receivePromos,
+                                );
+                              }
                             }
-                          },
+                          }
                         ),
                         const SizedBox(height: 24),
                         Row(
@@ -342,22 +358,26 @@ class _SignUpViewState extends State<SignUpView> {
 
 
   Widget _buildField(
-    String label,
-    TextEditingController controller, {
-    TextInputType inputType = TextInputType.text,
-    bool obscure = false,
-    bool isObscured = false,
-    bool showToggle = false,
-    void Function()? onToggleVisibility,
-    String? Function(String?)? validator,
-  }) {
+      String label,
+      TextEditingController controller, {
+        TextInputType inputType = TextInputType.text,
+        bool obscure = false,
+        bool isObscured = false,
+        bool showToggle = false,
+        void Function()? onToggleVisibility,
+        String? Function(String?)? validator,
+        List<TextInputFormatter>? inputFormatters,
+        String? hintText,
+      }) {
     return TextFormField(
       controller: controller,
       keyboardType: inputType,
       obscureText: isObscured,
       validator: validator,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
+        hintText: hintText,
         filled: true,
         fillColor: Colors.grey.shade100,
         border: OutlineInputBorder(
@@ -366,14 +386,15 @@ class _SignUpViewState extends State<SignUpView> {
         ),
         suffixIcon: showToggle
             ? IconButton(
-                icon: Icon(
-                  isObscured ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
-                ),
-                onPressed: onToggleVisibility,
-              )
+          icon: Icon(
+            isObscured ? Icons.visibility_off : Icons.visibility,
+            color: Colors.grey,
+          ),
+          onPressed: onToggleVisibility,
+        )
             : null,
       ),
     );
   }
+
 }
