@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_multi_formatter/formatters/phone_input_formatter.dart';
 import 'package:onlinegroceries/common_widget/round_button.dart';
 import 'package:onlinegroceries/view/login/forgot_password_view.dart';
 import 'package:onlinegroceries/view/login/sign_up_view.dart';
 import 'package:onlinegroceries/view/login/verification_view.dart';
+
+import '../../controllers/auth_controller.dart';
 
 class LogInView extends StatefulWidget {
   const LogInView({super.key});
@@ -101,8 +104,10 @@ class _LogInViewState extends State<LogInView> {
                 controller: inputController,
                 keyboardType:
                 isEmailSelected ? TextInputType.emailAddress : TextInputType.phone,
+                inputFormatters: isEmailSelected ? [] : [PhoneInputFormatter()],
                 decoration: InputDecoration(
                   labelText: isEmailSelected ? "Email" : "Phone Number",
+                  hintText: isEmailSelected ? "Enter your email" : "+94 75 000 0000",
                   filled: true,
                   fillColor: Colors.grey.shade100,
                   border: OutlineInputBorder(
@@ -179,16 +184,20 @@ class _LogInViewState extends State<LogInView> {
                 title: "Sign In",
                 onPressed: () {
                   if (isEmailSelected) {
-                    // Handle email login (placeholder)
-                    debugPrint("Login with Email: ${inputController.text}");
+                    // Email login
+                    AuthController.instance.loginWithEmail(
+                      email: inputController.text.trim(),
+                      password: passwordController.text.trim(),
+                    );
                   } else {
-                    // Go to OTP screen (no backend yet)
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (context) => const VerificationView()),
-                    // );
+                    // Phone login (OTP)
+                    AuthController.instance.loginWithPhoneOTP(
+                      inputController.text.trim().replaceAll(' ', ''),
+                    );
+
                   }
                 },
+
               ),
 
               const SizedBox(height: 24),

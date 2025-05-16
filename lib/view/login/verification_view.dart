@@ -164,6 +164,7 @@ class _VerificationViewState extends State<VerificationView> {
                               dob: widget.dob,
                               branch: widget.branch,
                               receivePromos: widget.receivePromos,
+                              isLogin: widget.firstName.isEmpty,
                             );
                           },
                           child: Container(

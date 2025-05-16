@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:onlinegroceries/common/color_extension.dart';
-import 'package:onlinegroceries/common_widget/round_button.dart';
-import 'package:onlinegroceries/view/login/verification_view.dart';
 import 'package:onlinegroceries/view/login/sign_up_view.dart';
 
+import '../../common_widget/round_button.dart';
+import '../../controllers/auth_controller.dart';
 import 'login_view.dart';
 
 class SignInView extends StatefulWidget {
@@ -132,6 +132,34 @@ class _SignInViewState extends State<SignInView> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    RoundButton(
+                      title: "Continue",
+                      onPressed: () {
+                        final rawPhone = txtMobile.text.trim();
+                        final phone = "${countryCode.dialCode}${rawPhone.replaceAll(' ', '')}";
+
+                        if (rawPhone.isEmpty || rawPhone.length < 9) {
+                          Get.snackbar(
+                            "Error",
+                            "Please enter a valid mobile number",
+                            backgroundColor: Colors.red,
+                            colorText: Colors.white,
+                          );
+                          return;
+                        }
+
+                        AuthController.instance.sendOTP(
+                          phoneNumber: phone,
+                          firstName: '',
+                          lastName: '',
+                          dob: '',
+                          branch: '',
+                          receivePromos: false,
+                        );
+                      },
+                    ),
+
 
                     const SizedBox(height: 28),
 

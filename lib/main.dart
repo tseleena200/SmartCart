@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
+import 'package:onlinegroceries/view/login/sign_in_view.dart';
 
 import 'package:onlinegroceries/view/login/splash_view.dart';
 import 'common/color_extension.dart';
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: TColor.primary),
         useMaterial3: false,
       ),
-      home: const SplashView(),
+      home: const SignInView(),
     );
   }
 }

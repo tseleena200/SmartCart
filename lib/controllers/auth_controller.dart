@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../view/login/login_view.dart';
 import '../view/login/verification_view.dart';
 import '../common/color_extension.dart';
+import '../view/main_tabview/main_tab.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
@@ -149,6 +150,7 @@ class AuthController extends GetxController {
     required String dob,
     required String branch,
     required bool receivePromos,
+    bool isLogin = false,
   }) async {
     try {
       final credential = PhoneAuthProvider.credential(
@@ -158,14 +160,21 @@ class AuthController extends GetxController {
 
       await _auth.signInWithCredential(credential);
 
-      await _registerPhoneUser(
-        firstName: firstName,
-        lastName: lastName,
-        phone: phone,
-        dob: dob,
-        branch: branch,
-        receivePromos: receivePromos,
-      );
+      if (isLogin) {
+        // Don't register, just show login success
+        Get.snackbar("Login Successful", "Welcome back!",
+            backgroundColor: TColor.success, colorText: Colors.white);
+        Get.offAll(() => const MainTabView());
+      } else {
+        await _registerPhoneUser(
+          firstName: firstName,
+          lastName: lastName,
+          phone: phone,
+          dob: dob,
+          branch: branch,
+          receivePromos: receivePromos,
+        );
+      }
     } on FirebaseAuthException catch (e) {
       Get.snackbar(
         "Verification Failed",
@@ -175,6 +184,7 @@ class AuthController extends GetxController {
       );
     }
   }
+
 
   /// Save phone user to Firestore
   Future<void> _registerPhoneUser({
@@ -210,4 +220,68 @@ class AuthController extends GetxController {
 
     Get.offAll(() => const LogInView());
   }
+
+
+  Future<void> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+
+      Get.snackbar(
+        "Login Successful",
+        "Welcome back!",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: TColor.success,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        borderRadius: 12,
+      );
+
+      Get.offAll(() => const MainTabView());
+    } on FirebaseAuthException catch (e) {
+      String msg = 'Login failed';
+      if (e.code == 'user-not-found') {
+        msg = 'No user found for that email';
+      } else if (e.code == 'wrong-password') {
+        msg = 'Incorrect password';
+      }
+
+      Get.snackbar(
+        "Error",
+        msg,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: TColor.error,
+        colorText: Colors.white,
+      );
+    }
+  }
+  void loginWithPhoneOTP(String phoneNumber) {
+    _auth.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await _auth.signInWithCredential(credential);
+        Get.snackbar("Login Successful", "Welcome back!", backgroundColor: TColor.success, colorText: Colors.white);
+        Get.offAll(() => const LogInView());
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        Get.snackbar("OTP Failed", e.message ?? "Something went wrong", backgroundColor: TColor.error, colorText: Colors.white);
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        Get.to(() => VerificationView(
+          verificationId: verificationId,
+          phone: phoneNumber,
+          firstName: '',
+          lastName: '',
+          dob: '',
+          branch: '',
+          receivePromos: false,
+        ));
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
+  }
+
 }
