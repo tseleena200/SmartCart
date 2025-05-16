@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:onlinegroceries/view/login/login_view.dart';
-import 'package:onlinegroceries/view/login/sign_in_view.dart';
-import 'package:onlinegroceries/view/login/sign_up_view.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:onlinegroceries/view/login/splash_view.dart';
 import 'common/color_extension.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  ); //  Firebase initialization
   runApp(const MyApp());
 }
 
@@ -24,7 +27,5 @@ class MyApp extends StatelessWidget {
       ),
       home: const SplashView(),
     );
-
-
   }
 }

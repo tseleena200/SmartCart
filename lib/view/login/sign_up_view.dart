@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +14,8 @@ class SignUpView extends StatefulWidget {
 }
 
 class _SignUpViewState extends State<SignUpView> {
+  final _formKey = GlobalKey<FormState>();
+
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
@@ -47,261 +51,258 @@ class _SignUpViewState extends State<SignUpView> {
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 2),
-                      const Center(
-                        child: Text(
-                          "Registration",
-                          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 2),
+                        const Center(
+                          child: Text(
+                            "Registration",
+                            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                      // Toggle
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          GestureDetector(
-                            onTap: () => setState(() => isEmailSelected = false),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: !isEmailSelected
-                                    ? Colors.grey.shade300
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: () => setState(() => isEmailSelected = false),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: !isEmailSelected ? Colors.grey.shade300 : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text("Phone number"),
                               ),
-                              child: const Text("Phone number"),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () => setState(() => isEmailSelected = true),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isEmailSelected
-                                    ? Colors.grey.shade300
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(20),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => setState(() => isEmailSelected = true),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isEmailSelected ? Colors.grey.shade300 : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text("Email"),
                               ),
-                              child: const Text("Email"),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Email or Phone
-                      if (isEmailSelected)
-                        _buildField("Email", emailController, TextInputType.emailAddress)
-                      else
-                        _buildField("Phone Number", phoneController, TextInputType.phone),
-
-                      const SizedBox(height: 16),
-                      _buildField("First Name", firstNameController),
-                      const SizedBox(height: 16),
-                      _buildField("Last Name", lastNameController),
-                      const SizedBox(height: 16),
-
-                      // DOB with date picker
-                      GestureDetector(
-                        onTap: () async {
-                          DateTime? picked = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime(2000),
-                            firstDate: DateTime(1900),
-                            lastDate: DateTime.now(),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              dobController.text =
-                                  DateFormat('yyyy-MM-dd').format(picked);
-                            });
-                          }
-                        },
-                        child: AbsorbPointer(
-                          child: _buildField("Date of Birth", dobController),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 24),
 
-                      // Preferred Branch
-                      DropdownButtonFormField<String>(
-                        value: selectedBranch,
-                        decoration: InputDecoration(
-                          labelText: "Preferred Store Branch",
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                        if (isEmailSelected)
+                          _buildField(
+                            "Email",
+                            emailController,
+                            inputType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return 'Email is required';
+                              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(value)) return 'Enter valid email';
+                              return null;
+                            },
+                          )
+                        else
+                          _buildField(
+                            "Phone Number",
+                            phoneController,
+                            inputType: TextInputType.phone,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return 'Phone number is required';
+                              if (!RegExp(r'^\d{10,15}$').hasMatch(value)) return 'Enter valid phone number';
+                              return null;
+                            },
+                          ),
+
+                        const SizedBox(height: 16),
+                        _buildField("First Name", firstNameController, validator: (value) => value!.isEmpty ? 'Required' : null),
+                        const SizedBox(height: 16),
+                        _buildField("Last Name", lastNameController, validator: (value) => value!.isEmpty ? 'Required' : null),
+                        const SizedBox(height: 16),
+
+                        GestureDetector(
+                          onTap: () async {
+                            DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime(2000),
+                              firstDate: DateTime(1900),
+                              lastDate: DateTime.now(),
+                            );
+                            if (picked != null) {
+                              setState(() {
+                                dobController.text = DateFormat('yyyy-MM-dd').format(picked);
+                              });
+                            }
+                          },
+                          child: AbsorbPointer(
+                            child: _buildField("Date of Birth", dobController, validator: (value) => value!.isEmpty ? 'Required' : null),
                           ),
                         ),
-                        items: storeBranches
-                            .map((branch) => DropdownMenuItem(
-                          value: branch,
-                          child: Text(branch),
-                        ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedBranch = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
 
-                      // Password
-                      if (isEmailSelected) ...[
-                        TextField(
-                          controller: passwordController,
-                          obscureText: !isPasswordVisible,
+                        DropdownButtonFormField<String>(
+                          value: selectedBranch,
                           decoration: InputDecoration(
-                            labelText: "Password",
+                            labelText: "Preferred Store Branch",
                             filled: true,
                             fillColor: Colors.grey.shade100,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
                             ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  isPasswordVisible = !isPasswordVisible;
-                                });
-                              },
-                            ),
                           ),
+                          items: storeBranches
+                              .map((branch) => DropdownMenuItem(value: branch, child: Text(branch)))
+                              .toList(),
+                          onChanged: (value) => setState(() => selectedBranch = value),
+                          validator: (value) => value == null ? 'Please select a branch' : null,
                         ),
-                        const SizedBox(height: 12),
+
+                        const SizedBox(height: 16),
+
+                        if (isEmailSelected) ...[
+                          _buildField("Password", passwordController, obscure: true, validator: (value) {
+                            if (value == null || value.isEmpty) return 'Password is required';
+                            if (value.length < 8) return 'Min 8 characters required';
+                            if (!RegExp(r'[A-Z]').hasMatch(value)) return 'Must contain 1 capital letter';
+                            if (!RegExp(r'[0-9]').hasMatch(value)) return 'Must contain 1 number';
+                            return null;
+                          }),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: const [
+                              Text("min 8 letters", style: TextStyle(fontSize: 12)),
+                              Text("1 capital letter", style: TextStyle(fontSize: 12)),
+                              Text("1 number", style: TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                        ],
+
+                        const SizedBox(height: 20),
+
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: const [
-                            Text("min 8 letters", style: TextStyle(fontSize: 12)),
-                            Text("1 capital letter", style: TextStyle(fontSize: 12)),
-                            Text("1 number", style: TextStyle(fontSize: 12)),
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Checkbox(
+                              value: receivePromos,
+                              activeColor: themeColor,
+                              onChanged: (val) => setState(() => receivePromos = val!),
+                            ),
+                            const Expanded(child: Text("Receive exclusive offers and promotions")),
                           ],
                         ),
-                        const SizedBox(height: 20),
-                      ],
 
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Checkbox(
-                                value: receivePromos,
-                                activeColor: themeColor,
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                                onChanged: (val) {
-                                  setState(() => receivePromos = val!);
-                                },
-                              ),
-                              const Expanded(
-                                child: Text(
-                                  "Receive exclusive offers and promotions",
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Checkbox(
-                                value: termsandcondtions,
-                                activeColor: themeColor,
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                                onChanged: (val) {
-                                  setState(() => termsandcondtions = val!);
-                                },
-                              ),
-                              Expanded(
-                                child: RichText(
-                                  text: TextSpan(
-                                    style: const TextStyle(color: Colors.black, fontSize: 14),
-                                    children: [
-                                      const TextSpan(text: "I agree to the "),
-                                      TextSpan(
-                                        text: "Terms & Conditions",
-                                        style: TextStyle(
-                                          color: themeColor,
-                                          fontWeight: FontWeight.bold,
-                                          decoration: TextDecoration.underline,
-                                        ),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            debugPrint("Terms & Conditions tapped");
-                                          },
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Checkbox(
+                              value: termsandcondtions,
+                              activeColor: themeColor,
+                              onChanged: (val) => setState(() => termsandcondtions = val!),
+                            ),
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(color: Colors.black),
+                                  children: [
+                                    const TextSpan(text: "I agree to the "),
+                                    TextSpan(
+                                      text: "Terms & Conditions",
+                                      style: TextStyle(
+                                        color: themeColor,
+                                        fontWeight: FontWeight.bold,
+                                        decoration: TextDecoration.underline,
                                       ),
-                                    ],
-                                  ),
+                                      recognizer: TapGestureRecognizer()..onTap = () => debugPrint("Terms & Conditions tapped"),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      RoundButton(
-                        title: "Next",
-                        onPressed: () {
-                          // Handle registration here
-                        },
-                      ),
-                      const SizedBox(height: 24),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text("Do you have already account? "),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const LogInView()));
-                            },
-                            child: const Text(
-                              "Sign in",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                decoration: TextDecoration.underline,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      const Center(child: Text("Sign in")),
-                      const SizedBox(height: 12),
+                          ],
+                        ),
 
-                      // Socials
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildSocialIcon("assets/img/google.png"),
-                          const SizedBox(width: 16),
-                          _buildSocialIcon("assets/img/facebook-logo-png.png"),
-                          const SizedBox(width: 16),
-                          _buildSocialIcon("assets/img/appleidl.png"),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                    ],
+                        const SizedBox(height: 16),
+
+                        RoundButton(
+                          title: "Register",
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                if (!termsandcondtions) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Please agree to the Terms & Conditions")),
+                                  );
+                                  return;
+                                }
+
+                                try {
+                                  // 1. Register user with Firebase Auth
+                                  final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                                    email: emailController.text.trim(),
+                                    password: passwordController.text.trim(),
+                                  );
+
+                                  // 2. Save user data to Firestore
+                                  await FirebaseFirestore.instance.collection('Users').doc(credential.user!.uid).set({
+                                    'userID': credential.user!.uid,
+                                    'name': '${firstNameController.text.trim()} ${lastNameController.text.trim()}',
+                                    'email': emailController.text.trim(),
+                                    'phoneNumber': phoneController.text.trim(),
+                                    'userRole': 'customer',
+                                    'dob': dobController.text.trim(),
+                                    'preferredBranch': selectedBranch,
+                                    'receivePromos': receivePromos,
+                                    'favorites': [],
+                                    'purchaseHistory': [],
+                                    'createdAt': FieldValue.serverTimestamp(),
+                                  });
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Registration successful!")),
+                                  );
+
+                                  // Optional: Navigate to login or home
+                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LogInView()));
+                                } on FirebaseAuthException catch (e) {
+                                  String msg = 'An error occurred';
+                                  if (e.code == 'email-already-in-use') {
+                                    msg = 'This email is already in use';
+                                  } else if (e.code == 'weak-password') {
+                                    msg = 'The password is too weak';
+                                  }
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Unexpected error: ${e.toString()}")),
+                                  );
+                                }
+                              }
+                            }
+
+                        ),
+
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text("Do you have already account? "),
+                            GestureDetector(
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LogInView())),
+                              child: const Text(
+                                "Sign in",
+                                style: TextStyle(fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -312,11 +313,12 @@ class _SignUpViewState extends State<SignUpView> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller,
-      [TextInputType inputType = TextInputType.text]) {
-    return TextField(
+  Widget _buildField(String label, TextEditingController controller, {TextInputType inputType = TextInputType.text, bool obscure = false, String? Function(String?)? validator}) {
+    return TextFormField(
       controller: controller,
       keyboardType: inputType,
+      obscureText: obscure,
+      validator: validator,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
