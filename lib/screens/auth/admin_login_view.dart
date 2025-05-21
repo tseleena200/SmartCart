@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../constants.dart';
+import '../dashboard/dashboard_screen.dart';
+import '../main/main_screen.dart';
+import 'admin_auth_service.dart';
 import 'admin_register_view.dart';
 
 class AdminLoginView extends StatefulWidget {
@@ -54,7 +57,7 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      "Fast & Easy Product Management",
+                      "Fast & Easy Product/User Management",
                       style: TextStyle(color: Colors.white60, fontSize: 12),
                     ),
                     SizedBox(height: 24),
@@ -127,9 +130,35 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                     backgroundColor: primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  onPressed: () {
-                    // TODO: Add Firebase login logic here
+                  onPressed: () async {
+                    if (emailController.text.trim().isEmpty ||
+                        passwordController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please fill in all fields')),
+                      );
+                      return;
+                    }
+
+                    final error = await AdminAuthService().loginAdmin(
+                      email: emailController.text.trim(),
+                      password: passwordController.text.trim(),
+                    );
+
+                    if (error == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Logged in successfully!')),
+                      );
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => MainScreen()),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(error)),
+                      );
+                    }
                   },
+
                   child: const Text(
                     "Sign In",
                     style: TextStyle(color: Colors.white, fontSize: 16),

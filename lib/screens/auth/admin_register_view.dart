@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants.dart';
+import 'admin_auth_service.dart';
 
 class AdminRegisterView extends StatefulWidget {
   const AdminRegisterView({super.key});
@@ -12,6 +13,9 @@ class _AdminRegisterViewState extends State<AdminRegisterView> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController nicController = TextEditingController();
+
   bool isPasswordVisible = false;
 
   @override
@@ -101,7 +105,41 @@ class _AdminRegisterViewState extends State<AdminRegisterView> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
+// Phone Number Field
+                TextField(
+                  controller: phoneController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Phone Number',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white30),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: primaryColor),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+// NIC Field
+                TextField(
+                  controller: nicController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'NIC / ID Number',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white30),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: primaryColor),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 // Password Field
                 TextField(
                   controller: passwordController,
@@ -136,8 +174,36 @@ class _AdminRegisterViewState extends State<AdminRegisterView> {
                     backgroundColor: primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  onPressed: () {
-                    // TODO: Add Firebase registration logic
+                  onPressed: () async {
+                    if (nameController.text.trim().isEmpty ||
+                        emailController.text.trim().isEmpty ||
+                        passwordController.text.trim().isEmpty ||
+                        phoneController.text.trim().isEmpty ||
+                        nicController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please fill all fields')),
+                      );
+                      return;
+                    }
+
+                    final error = await AdminAuthService().registerAdmin(
+                      fullName: nameController.text.trim(),
+                      email: emailController.text.trim(),
+                      password: passwordController.text.trim(),
+                      phone: phoneController.text.trim(),
+                      nic: nicController.text.trim(),
+                    );
+
+                    if (error == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('✅ Admin registered successfully!')),
+                      );
+                      Navigator.pop(context); // Go to login screen
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(error)),
+                      );
+                    }
                   },
                   child: const Text(
                     "Create Account",
