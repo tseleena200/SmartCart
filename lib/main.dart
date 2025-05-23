@@ -1,9 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
+import 'package:onlinegroceries/view/login/PasswordResetSuccessView.dart';
+import 'package:onlinegroceries/view/login/login_view.dart';
 import 'package:onlinegroceries/view/login/sign_in_view.dart';
 
 import 'package:onlinegroceries/view/login/splash_view.dart';
+import 'package:onlinegroceries/view/main_tabview/main_tab.dart';
 import 'common/color_extension.dart';
 import 'controllers/auth_controller.dart';
 import 'firebase_options.dart';
@@ -16,7 +21,16 @@ void main() async {
 
   // Register AuthController using GetX
   Get.put(AuthController());
-
+  final currentUser = FirebaseAuth.instance.currentUser;
+  if (currentUser != null) {
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser.uid)
+        .update({
+      'accountStatus': 'Active',
+      'lastLoginAt': FieldValue.serverTimestamp(),
+    });
+  }
   runApp(const MyApp());
 }
 
@@ -33,7 +47,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: TColor.primary),
         useMaterial3: false,
       ),
-      home: const SignInView(),
+      home: const MainTabView(),
     );
   }
 }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../common/color_extension.dart';
 import '../../common_widget/round_button.dart';
-import 'login_view.dart';
+import 'ForgotPasswordEmailScreen.dart';
+import 'ForgotPasswordPhoneScreen.dart';
+
 
 class ForgotPasswordView extends StatefulWidget {
   const ForgotPasswordView({super.key});
@@ -10,8 +13,7 @@ class ForgotPasswordView extends StatefulWidget {
 }
 
 class _ForgotPasswordViewState extends State<ForgotPasswordView> {
-  final TextEditingController emailController = TextEditingController();
-  final Color themeColor = const Color(0xFF03452C); // Dark green
+  String selectedMethod = "email";
 
   @override
   Widget build(BuildContext context) {
@@ -20,82 +22,126 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
               // Title
-              const Center(
-                child: Text(
-                  "Forgot Password",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios),
+                onPressed: () => Navigator.pop(context),
               ),
-              const SizedBox(height: 10),
-              const Center(
-                child: Text(
-                  "Enter your registered email and we’ll send you\ninstructions to reset your password.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
+              const SizedBox(height: 8),
+              const Text(
+                "Forgot Password",
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 8),
+              Text(
+                "Select which contact details should we use to reset your password",
+                style: TextStyle(fontSize: 14, color: TColor.secondaryText),
+              ),
+              const SizedBox(height: 24),
 
-              // Email Field
-              TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  labelText: "Email",
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
+              // Email option
+              GestureDetector(
+                onTap: () => setState(() => selectedMethod = "email"),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: selectedMethod == "email"
+                          ? TColor.primary
+                          : Colors.grey.shade300,
+                    ),
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+                    color: selectedMethod == "email"
+                        ? TColor.primary.withOpacity(0.05)
+                        : Colors.grey.shade100,
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset("assets/img/email.png", width: 28, height: 28),
+                      const SizedBox(width: 16),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Email",
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600)),
+                          SizedBox(height: 4),
+                          Text("Send to your email",
+                              style:
+                              TextStyle(fontSize: 14, color: Colors.grey)),
+                        ],
+                      )
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
 
-              // Reset Button
+              const SizedBox(height: 16),
+
+              // Phone option
+              GestureDetector(
+                onTap: () => setState(() => selectedMethod = "phone"),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: selectedMethod == "phone"
+                          ? TColor.primary
+                          : Colors.grey.shade300,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    color: selectedMethod == "phone"
+                        ? TColor.primary.withOpacity(0.05)
+                        : Colors.grey.shade100,
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset("assets/img/phone.png", width: 28, height: 28),
+                      const SizedBox(width: 16),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Phone Number",
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600)),
+                          SizedBox(height: 4),
+                          Text("Send to your phone number",
+                              style:
+                              TextStyle(fontSize: 14, color: Colors.grey)),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+
+              const Spacer(),
+
+              // Continue button
               RoundButton(
-                title: "Send Reset Link",
+                title: "Continue",
                 onPressed: () {
-                  // TODO: handle reset link send
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        "If this email is registered, a reset link will be sent.",
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Back to Login
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
+                  if (selectedMethod == "email") {
+                    Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const LogInView()),
+                      MaterialPageRoute(
+                        builder: (_) => const ForgotPasswordEmailView(),
+                      ),
                     );
-                  },
-                  child: Text(
-                    "Back to Sign In",
-                    style: TextStyle(
-                      color: themeColor,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ForgotPasswordPhoneView(),
+                      ),
+                    );
+                  }
+                },
               ),
             ],
           ),
