@@ -229,6 +229,13 @@ class AuthController extends GetxController {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
+      //  Set account status to "Active"
+      await _firestore.collection('Users')
+          .doc(_auth.currentUser!.uid)
+          .update({
+        'accountStatus': 'Active',
+      });
+
       Get.snackbar(
         "Login Successful",
         "Welcome back!",
@@ -258,6 +265,7 @@ class AuthController extends GetxController {
       );
     }
   }
+
   void loginWithPhoneOTP(String phoneNumber) {
     _auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
@@ -283,5 +291,32 @@ class AuthController extends GetxController {
       codeAutoRetrievalTimeout: (String verificationId) {},
     );
   }
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      Get.snackbar(
+        "Success",
+        "A password reset link has been sent to $email.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: TColor.success,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        borderRadius: 12,
+      );
+    } catch (e) {
+      Get.snackbar(
+        "Reset Failed",
+        "Error: ${e.toString()}",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: TColor.error,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        borderRadius: 12,
+      );
+    }
+  }
+
 
 }
