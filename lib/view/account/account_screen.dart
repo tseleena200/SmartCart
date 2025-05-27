@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:onlinegroceries/common/color_extension.dart';
@@ -84,7 +85,20 @@ class _AccountViewState extends State<AccountView> {
                   children: [
                     MaterialButton(
                       onPressed: () async {
+                        final user = FirebaseAuth.instance.currentUser;
+
+                        if (user != null) {
+                          await FirebaseFirestore.instance
+                              .collection('Users')
+                              .doc(user.uid)
+                              .update({
+                            'accountStatus': 'Inactive',
+                            'lastActiveAt': FieldValue.serverTimestamp(),
+                          });
+                        }
+
                         await FirebaseAuth.instance.signOut();
+
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(builder: (context) => const LogInView()),
