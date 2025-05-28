@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:onlinegroceries/view/main_tabview/main_tab.dart';
 
 import 'firebase_options.dart';
 import 'controllers/auth_controller.dart';
@@ -43,7 +44,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: TColor.primary),
         useMaterial3: false,
       ),
-      home: const LogInView(),
+      home: const MainTabView(),
     );
   }
 }

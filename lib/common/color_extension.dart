@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
 
 class TColor {
-  // Primary color theme
-  static Color get primary => const Color(0xFF03452C); // Your main green
-  static Color get primaryText => const Color(0xFF030303);
-  static Color get secondaryText => const Color(0xFF828282);
-  static Color get textTitle => const Color(0xFF7C7C7C);
-  static Color get placeholder => const Color(0xFFB1B1B1);
-  static Color get darkGrey => const Color(0xff030303);
+  // 🎨 Brand Palette (from uploaded image)
+  static const Color moss = Color(0xFF87486E);      // Deep green
+  static const Color cypress = Color(0xFF4C583E);   // Earthy olive
+  static const Color olive = Color(0xFF768064);     // Midtone green-gray
+  static const Color cedar = Color(0xFF959581);     // Muted beige
+  static const Color aloe = Color(0xFFDADED8);      // Very light mint
+
+  // ✅ Theme Usage Mapping
+
+  // Primary
+  static Color get primary => moss;
 
   // Backgrounds
-  static Color get background => const Color(0xFFF5F5F5);
-  static Color get card => const Color(0xFFFFFFFF);
+  static Color get backgroundLight => aloe;
+  static Color get backgroundDark => moss;
+  static Color get cardLight => Colors.white;
+  static Color get cardDark => cypress;
 
-  // Snackbar / feedback colors
-  static Color get success => const Color(0xFF03452C); // same as primary
-  static Color get error => const Color(0xFF450303);   // your dark red
+  // Text
+  static Color get primaryText => const Color(0xFF030303); // Deep black for strong text
+  static Color get secondaryText => const Color(0xFF828282); // General subtitle
+  static Color get textTitle => const Color(0xFF7C7C7C); // List titles / section heads
+  static Color get placeholder => const Color(0xFFB1B1B1); // Input hints
+  static Color get darkGrey => const Color(0xFF030303); // Reuse for icons / fallback
+
+  // Feedback
+  static Color get success => olive;
+  static Color get error => Color(0xFF8B0000); // Dark red
 }

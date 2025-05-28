@@ -120,6 +120,16 @@ class _MainTabViewState extends State<MainTabView>
 
                   ),
                 ),
+                // Tab(text: "Recommendation",
+                //   icon: Image.asset(
+                //     "assets/img/recommendation.png",
+                //     width: 25,
+                //     height:25 ,
+                //     color: selectTab == 3 ? TColor.primary : TColor.primaryText,
+                //
+                //
+                //   ),
+                // ),
                 Tab(text: "Account",
                   icon: Image.asset(
                     "assets/img/account_tab.png",
