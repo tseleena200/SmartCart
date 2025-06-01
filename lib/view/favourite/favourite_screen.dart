@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:onlinegroceries/common/color_extension.dart';
 import 'package:onlinegroceries/common_widget/round_button.dart';
-
-import '../../common/color_extension.dart';
-
-import '../../common_widget/favourite_row.dart';
-
+import 'package:onlinegroceries/common_widget/favourite_row.dart';
 
 class FavouriteView extends StatefulWidget {
   const FavouriteView({super.key});
@@ -14,7 +11,7 @@ class FavouriteView extends StatefulWidget {
 }
 
 class _FavouriteViewState extends State<FavouriteView> {
-  List listArr = [
+  List<Map<String, dynamic>> listArr = [
     {
       "name": "Sprite Can",
       "icon": "assets/img/sprite_can.png",
@@ -52,16 +49,16 @@ class _FavouriteViewState extends State<FavouriteView> {
     },
   ];
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
         centerTitle: true,
         title: Text(
-          "My Favourties",
+          "My Favourites",
           style: TextStyle(
             color: TColor.primaryText,
             fontSize: 20,
@@ -69,40 +66,49 @@ class _FavouriteViewState extends State<FavouriteView> {
           ),
         ),
       ),
-      backgroundColor: Colors.white,
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
           ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical:10,horizontal: 20),
-              itemCount: listArr.length,
-              separatorBuilder: (context, index) => const Divider(
-                color: Colors.black26,
-                height: 1,
-              ),
-              itemBuilder: (context, index) {
-                var pObj = listArr[index] as Map? ?? {};
-                return FavouriteRow(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            itemCount: listArr.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 1),
+            itemBuilder: (context, index) {
+              var pObj = listArr[index];
+              return Dismissible(
+                key: Key(pObj["name"]),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  color: Colors.redAccent,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                onDismissed: (_) {
+                  setState(() {
+                    listArr.removeAt(index);
+                  });
+                },
+                child: FavouriteRow(
                   pObj: pObj,
-                  onPressed: (){},
-                );
-              }),
+                  onPressed: () {
+                    // Optional: handle single add action
+                  },
+                ),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-               RoundButton(title: "Add All To Cart", onPressed: (){
-
-
-               })
-              ],
+            child: RoundButton(
+              title: "Add All To Cart",
+              onPressed: () {
+                // Handle add all to cart
+              },
             ),
           )
         ],
       ),
     );
   }
-
-
 }

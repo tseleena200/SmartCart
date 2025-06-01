@@ -20,32 +20,30 @@ class ProductCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(16),
       onTap: onPressed,
       child: Container(
         width: weight,
         margin: EdgeInsets.symmetric(horizontal: margin, vertical: 6),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFFAFAFA), // Slightly darker than white
-
-          borderRadius: BorderRadius.circular(22),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.10),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: Colors.black12.withOpacity(0.1),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
           ],
           border: Border.all(
-            color: TColor.primary.withOpacity(0.10),
+            color: Colors.grey.withOpacity(0.12),
             width: 1,
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-
             SizedBox(
               height: 80,
               child: Image.asset(
@@ -59,8 +57,7 @@ class ProductCell extends StatelessWidget {
               style: TextStyle(
                 color: TColor.primaryText,
                 fontSize: 16,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.1,
+                fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
@@ -70,9 +67,8 @@ class ProductCell extends StatelessWidget {
             Text(
               "${pObj["qty"]} ${pObj["unit"]}",
               style: TextStyle(
-                color: TColor.primaryText.withOpacity(0.87),
+                color: TColor.secondaryText,
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
               ),
             ),
             const Spacer(),
@@ -84,30 +80,27 @@ class ProductCell extends StatelessWidget {
                   style: TextStyle(
                     color: TColor.primary,
                     fontSize: 17,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 InkWell(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                   onTap: onCart,
                   child: Container(
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
                       color: TColor.primary,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: TColor.primary.withOpacity(0.13),
+                          color: TColor.primary.withOpacity(0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 3),
                         ),
                       ],
                     ),
-                    child: Tooltip(
-                      message: "Simulate Scan",
-                      child: const Icon(Icons.add, color: Colors.white, size: 20),
-                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 20),
                   ),
                 ),
               ],

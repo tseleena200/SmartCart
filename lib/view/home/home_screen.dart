@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../common/color_extension.dart';
 import '../../common_widget/category_cell.dart';
@@ -15,6 +16,7 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final TextEditingController txtSearch = TextEditingController();
+  int _currentBannerIndex = 0;
 
   List exclusiveOfferArr = [
     {"name": "Organic Bananas", "icon": "assets/img/banana.png", "qty": "7", "unit": "pcs", "price": "\$1.99"},
@@ -23,11 +25,9 @@ class _HomeViewState extends State<HomeView> {
   ];
 
   List groceriesArr = [
-    {"name": "Pulses", "icon": "assets/img/pulses.png", "color": const Color(
-        0xfff4cdf1)},
-    {"name": "Rice", "icon": "assets/img/rice.png", "color": const Color(0xff53B175)},
-    {"name": "Beans", "icon": "assets/img/pulses.png", "color": const Color(
-        0xffa96ecf)},
+    {"name": "Pulses", "icon": "assets/img/pulses.png", "color": const Color(0xfff4cdf1)},
+    {"name": "Rice", "icon": "assets/img/rice.png", "color": const Color(0xfffcbad3)},
+    {"name": "Beans", "icon": "assets/img/pulses.png", "color": const Color(0xffe4a4c3)},
   ];
 
   List newArrivalsArr = [
@@ -42,239 +42,207 @@ class _HomeViewState extends State<HomeView> {
     {"name": "Blueberries", "icon": "assets/img/blueberry.jpg", "qty": "1", "unit": "box", "price": "\$3.49"},
   ];
 
-  List bannerList = [
-    "assets/img/bannertop.png",
-    "assets/img/bannertop.png",
-    "assets/img/bannertop.png",
+  List<String> bannerList = [
+    "assets/img/1.png",
+    "assets/img/2.png",
+    "assets/img/3.png",
+    "assets/img/4.png",
+    "assets/img/5.png",
+    "assets/img/6.png",
+    "assets/img/7.png",
+    "assets/img/8.png",
+    "assets/img/9.png",
+    "assets/img/10.png",
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        // color: const Color(0xFFEDDDE6),
-        color: const Color(0xFFFAFAFA),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTopBar(),
-                _buildSearchBar(),
-                _buildBanner(),
-                _buildSectionTitle("Exclusive Offers", Icons.local_offer),
-                _buildHorizontalScrollSection(exclusiveOfferArr),
-                _buildCategorySection(),
-                _buildSection("New Arrivals", Icons.fiber_new, newArrivalsArr),
-                _buildSection("Popular Picks", Icons.whatshot, popularArr),
-              ],
-            ),
+      backgroundColor: Colors.grey.shade100,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildBrandedHeader(context),
+              _buildSearchBar(),
+              _buildBanner(),
+              _buildBannerIndicator(),
+              _buildSection("Exclusive Offers", exclusiveOfferArr, horizontal: true),
+              _buildCategoryPills(),
+              _buildSection("New Arrivals", newArrivalsArr),
+              _buildSection("Popular Picks", popularArr),
+            ],
           ),
         ),
       ),
     );
   }
-
-  Widget _buildTopBar() {
+  Widget _buildBrandedHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Welcome text
+          // Logo + Branch
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text.rich(
-                TextSpan(
-                  children: [
-                    const TextSpan(
-                      text: "Welcome back,\n",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    TextSpan(
-                      text: "Abishek 👋",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: TColor.primaryText,
-                      ),
-                    ),
-                  ],
-                ),
+              Image.asset(
+                "assets/img/logo-transparent.png",
+                height: 36,
+                fit: BoxFit.contain,
               ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.shopping_cart_outlined, size: 22, color: Colors.black),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Branch Info
-          GestureDetector(
-            onTap: () {
-              // handle branch selection
-            },
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent.withOpacity(0.1),
-                    shape: BoxShape.circle,
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Branch:",
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
                   ),
-                  child: const Icon(Icons.store, color: Colors.black, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Your Selected Branch",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.black45,
-                      ),
-                    ),
-                    Row(
+                  GestureDetector(
+                    onTap: () {
+                      // TODO: branch selection
+                    },
+                    child: Row(
                       children: const [
+                        Icon(Icons.store_rounded, size: 16, color: Color(0xff87486E)),
+                        SizedBox(width: 4),
                         Text(
                           "Colombo",
                           style: TextStyle(
-                            fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            fontSize: 14,
                           ),
                         ),
-                        SizedBox(width: 4),
-                        Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.black54),
+                        Icon(Icons.keyboard_arrow_down, size: 16),
                       ],
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Cart icon
+          CircleAvatar(
+            backgroundColor: Colors.grey.shade100,
+            radius: 20,
+            child: Icon(Icons.shopping_cart_outlined, color: Color(0xff87486E)),
           ),
         ],
       ),
     );
   }
+
 
 
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Colors.black12),
-          borderRadius: BorderRadius.circular(17),
-        ),
-        child: TextField(
-          controller: txtSearch,
-          style: const TextStyle(fontSize: 14),
-          decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.search, color: Colors.black54),
-            hintText: "Search anything you want",
-            hintStyle: TextStyle(
-              color: Colors.black45,
-              fontWeight: FontWeight.w400,
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12.withOpacity(0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 14),
-          ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 14),
+              child: Icon(Icons.search, color: Colors.grey),
+            ),
+            Expanded(
+              child: TextField(
+                style: const TextStyle(fontSize: 14),
+                decoration: const InputDecoration(
+                  hintText: "Search anything you want",
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.mic_none, color: Colors.grey),
+              onPressed: () {
+                // TODO: Add your voice input logic here
+                debugPrint("Voice search tapped");
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 
 
+
   Widget _buildBanner() {
-    return CarouselSlider(
+    return CarouselSlider.builder(
+      itemCount: bannerList.length,
       options: CarouselOptions(
-        height: 200.0,
+        height: 160, // Recommended height to match good aspect ratio
         autoPlay: true,
         enlargeCenterPage: true,
         viewportFraction: 0.9,
       ),
-      items: bannerList.map((imgPath) {
+      itemBuilder: (context, index, realIdx) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: Image.asset(imgPath, fit: BoxFit.cover, width: double.infinity),
+          child: Image.asset(
+            bannerList[index],
+            fit: BoxFit.cover,
+            width: double.infinity,
+          ),
         );
-      }).toList(),
+      },
     );
   }
 
-  Widget _buildSection(String title, IconData icon, List items) {
+  Widget _buildBannerIndicator() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 10), // Adds spacing above and below
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: bannerList.asMap().entries.map((entry) {
+          return Container(
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _currentBannerIndex == entry.key
+                  ? TColor.primary
+                  : TColor.primary.withOpacity(0.3),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+
+
+  Widget _buildSection(String title, List items, {bool horizontal = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle(title, icon),
-        _buildStyledGrid(items),
-      ],
-    );
-  }
-
-  Widget _buildSectionTitle(String title, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: TColor.primary, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: TColor.primaryText),
-              ),
-            ],
-          ),
-          TextButton(
-            onPressed: () {},
-            child: const Text("See All", style: TextStyle(fontSize: 15, color: Colors.black)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStyledGrid(List items) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: GridView.builder(
-        itemCount: items.length,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 14,
-          crossAxisSpacing: 14,
-          childAspectRatio: 0.75,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Text(title,
+              style: GoogleFonts.poppins(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: TColor.textTitle)),
         ),
-        itemBuilder: (context, index) {
-          var pObj = items[index];
-          return ProductCell(
-            pObj: pObj,
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductDetails()));
-            },
-            onCart: () {},
-          );
-        },
-      ),
+        horizontal ? _buildHorizontalScrollSection(items) : _buildVerticalGrid(items),
+      ],
     );
   }
 
@@ -287,35 +255,117 @@ class _HomeViewState extends State<HomeView> {
         itemCount: items.length,
         itemBuilder: (context, index) {
           var pObj = items[index];
-          return ProductCell(
-            pObj: pObj,
-            // useAltStyle: true,
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductDetails()));
-            },
-            onCart: () {},
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ProductCell(
+              pObj: pObj,
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductDetails())),
+              onCart: () => ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("${pObj["name"]} added to cart")),
+              ),
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _buildCategorySection() {
+  Widget _buildVerticalGrid(List items) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.builder(
+        shrinkWrap: true,
+        itemCount: items.length,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.75,
+        ),
+        itemBuilder: (context, index) {
+          var pObj = items[index];
+          return ProductCell(
+            pObj: pObj,
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductDetails())),
+            onCart: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("${pObj["name"]} added to cart")),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryPills() {
+    final List<Color> pastelColors = [
+      Color(0xFFFDEBD0),
+      Color(0xFFFADADD),
+      Color(0xFFD7EAFD),
+      Color(0xFFE8F8F5),
+      Color(0xFFF9E2F4),
+      Color(0xFFFDF2E9),
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("Groceries", Icons.category),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Text(
+            "Groceries",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: TColor.textTitle,
+            ),
+          ),
+        ),
         SizedBox(
-          height: 100,
+          height: 80,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 15),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: groceriesArr.length,
             itemBuilder: (context, index) {
-              var pObj = groceriesArr[index] as Map? ?? {};
-              return CategoryCell(
-                pObj: pObj,
-                onPressed: () {},
+              var pObj = groceriesArr[index];
+              return Container(
+                width: 130,
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                decoration: BoxDecoration(
+                  color: pastelColors[index % pastelColors.length],
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12.withOpacity(0.03),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: Image.asset(pObj["icon"], fit: BoxFit.contain),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        pObj["name"],
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: TColor.primaryText,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           ),
@@ -323,4 +373,5 @@ class _HomeViewState extends State<HomeView> {
       ],
     );
   }
+
 }

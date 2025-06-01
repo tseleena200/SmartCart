@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
 import '../../common/color_extension.dart';
 import '../../common_widget/product_cell.dart';
+import '../navigation/navigation_screen.dart';
 import 'filter_view.dart';
 
 
@@ -9,14 +9,11 @@ class ExploreDetailsView extends StatefulWidget {
   final Map eObj;
   const ExploreDetailsView({super.key, required this.eObj});
 
-
   @override
   State<ExploreDetailsView> createState() => _ExploreDetailsViewState();
 }
 
 class _ExploreDetailsViewState extends State<ExploreDetailsView> {
-
-
   List listArr = [
     {
       "name": "Diet Coke",
@@ -64,8 +61,6 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -88,7 +83,8 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const FilterView(),));
+                    builder: (context) => const FilterView(),
+                  ));
             },
             icon: Image.asset(
               "assets/img/filter_ic.png",
@@ -96,9 +92,7 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
               height: 20,
             ),
           ),
-
         ],
-
         title: Text(
           widget.eObj["name"].toString(),
           style: TextStyle(
@@ -108,28 +102,60 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
           ),
         ),
       ),
-
-      body: GridView.builder(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.navigation),
+                label: const Text("Start Route to Aisle"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: TColor.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RouteNavigationView(
+                        aisle: widget.eObj['aisle'] ?? 'Aisle ?',
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
               padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 0.75,
                 crossAxisSpacing: 15,
-                mainAxisSpacing: 15,),
+                mainAxisSpacing: 15,
+              ),
               itemCount: listArr.length,
               itemBuilder: (context, index) {
-                var pObj = listArr[index] as Map? ??{};
+                var pObj = listArr[index] as Map? ?? {};
                 return ProductCell(
                   pObj: pObj,
                   margin: 0,
-                  weight:double.maxFinite,
-                  onPressed: (){},
-                  onCart: (){},
-
+                  weight: double.maxFinite,
+                  onPressed: () {},
+                  onCart: () {},
                 );
-
               },
             ),
+          ),
+        ],
+      ),
     );
   }
 }
