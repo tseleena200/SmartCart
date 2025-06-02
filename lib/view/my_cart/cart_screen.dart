@@ -48,7 +48,7 @@ class _MyCartViewState extends State<MyCartView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor:  Colors.grey.shade100,
         elevation: 0.5,
         centerTitle: true,
         title: Text(
@@ -60,7 +60,7 @@ class _MyCartViewState extends State<MyCartView> {
           ),
         ),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade100,
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [

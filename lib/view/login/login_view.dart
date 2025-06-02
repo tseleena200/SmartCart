@@ -28,7 +28,7 @@ class _LogInViewState extends State<LogInView> {
     final media = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade50,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -40,8 +40,8 @@ class _LogInViewState extends State<LogInView> {
               // Logo
               Center(
                 child: Image.asset(
-                  "assets/img/logo-transparent.png",
-                  height: 120,
+                  "assets/img/smrtcartlogo.png",
+                  height: 150,
                 ),
               ),
 

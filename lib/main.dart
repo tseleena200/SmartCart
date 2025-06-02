@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:onlinegroceries/view/login/splash_view.dart';
 import 'package:onlinegroceries/view/main_tabview/main_tab.dart';
 
 import 'firebase_options.dart';
@@ -12,6 +14,8 @@ import 'common/color_extension.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //  HOTFIX: Disable Impeller's PlatformDispatcher crash
+  ui.PlatformDispatcher.instance.onPlatformConfigurationChanged = null;
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

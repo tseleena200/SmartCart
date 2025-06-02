@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'store_map_painter.dart'; // Adjust path if needed
+import 'package:onlinegroceries/view/navigation/store_map_painter.dart';
+
 
 class RouteNavigationView extends StatefulWidget {
   final String aisle;
@@ -17,22 +18,14 @@ class _RouteNavigationViewState extends State<RouteNavigationView>
   late AnimationController _controller;
   late Animation<double> _animation;
 
-  final Map<String, String> aisleToCategory = {
-    "Aisle 1": "Fruits & Vegetables",
-    "Aisle 2": "Fishes & Meat",
-    "Aisle 3": "Cooking Element",
-    "Aisle 4": "Home & Cleaning",
-    "Aisle 5": "Kitchen Appliances",
-    "Aisle 6": "Snacks Item",
-    "Aisle 7": "Dairy & Sweets",
-    "Aisle 8": "Personal Care",
-    "Aisle 9": "Stationery & Office",
-    "Aisle 10": "Health & Wellness",
-  };
+  late List<String> directions;
 
   @override
   void initState() {
     super.initState();
+
+    directions = getEstimatedSteps(widget.aisle);
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -40,7 +33,13 @@ class _RouteNavigationViewState extends State<RouteNavigationView>
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
 
-    flutterTts.speak("Please proceed to ${widget.aisle} via the suggested path.");
+    // 🔊 Automatically speak directions when screen loads
+    _speakDirections();
+  }
+
+  void _speakDirections() {
+    final speechText = directions.join(". ");
+    flutterTts.speak(speechText);
   }
 
   @override
@@ -82,43 +81,49 @@ class _RouteNavigationViewState extends State<RouteNavigationView>
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.store_mall_directory, color: Color(0xFF87486E)),
+                    const Icon(Icons.store_mall_directory,
+                        color: Color(0xFF87486E)),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         "Proceed to ${widget.aisle}",
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 30),
-              const Text(
-                "Estimated Route:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Estimated Route:",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  TextButton.icon(
+                    onPressed: _speakDirections,
+                    icon: const Icon(Icons.volume_up, size: 20),
+                    label: const Text("Speak"),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF87486E),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               Column(
-                children: getEstimatedSteps(widget.aisle)
-                    .map((step) => routeStep(step))
-                    .toList(),
+                children:
+                directions.map((step) => routeStep(step)).toList(),
               ),
               const SizedBox(height: 30),
               const Text(
-                "Store Map:",
+                " Need Help ? View The Store Map:",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 10),
-              Center(
-                child: SizedBox(
-                  width: 240,
-                  height: 200,
-                  child: StoreMapView(
-                    category: aisleToCategory[widget.aisle] ?? "Snacks Item",
-                  ),
-                ),
-              ),
+              const Center(child: StoreMapView()),
               const Spacer(),
               Center(
                 child: ElevatedButton.icon(
@@ -127,7 +132,8 @@ class _RouteNavigationViewState extends State<RouteNavigationView>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.shade700,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 14),
                   ),
                   onPressed: () {
                     Navigator.pop(context);
@@ -160,73 +166,56 @@ class _RouteNavigationViewState extends State<RouteNavigationView>
   }
 
   List<String> getEstimatedSteps(String aisle) {
-    switch (aisle) {
-      case "Aisle 1":
-        return [
-          "Start from the entrance",
-          "Turn left and reach Aisle 1 (Fruits & Vegetables)",
-        ];
-      case "Aisle 2":
-        return [
-          "Start from the entrance",
-          "Walk forward past Aisle 1 and Aisle 6",
-          "Turn left",
-          "Reach Aisle 2 (Fishes & Meat)",
-        ];
-      case "Aisle 3":
-        return [
-          "Start from the entrance",
-          "Go to the top-left corner of the store",
-          "Reach Aisle 3 (Cooking Element)",
-        ];
-      case "Aisle 4":
-        return [
-          "Start from the entrance",
-          "Walk straight ahead past Aisle 10",
-          "Turn right",
-          "Reach Aisle 4 (Home & Cleaning)",
-        ];
-      case "Aisle 5":
-        return [
-          "Start from the entrance",
-          "Walk forward and turn right after Snacks",
-          "Reach Aisle 5 (Kitchen Appliances)",
-        ];
-      case "Aisle 6":
-        return [
-          "Start from the entrance",
-          "Walk straight ahead",
-          "Reach Aisle 6 (Snacks Item)",
-        ];
-      case "Aisle 7":
-        return [
-          "Start from the entrance",
-          "Walk straight past Health & Wellness and Snacks Item",
-          "Turn slightly right",
-          "Reach Dairy & Sweets (Aisle 7)",
-        ];
-      case "Aisle 8":
-        return [
-          "Start from the entrance",
-          "Walk to the top-right of the store",
-          "Reach Aisle 8 (Personal Care)",
-        ];
-      case "Aisle 9":
-        return [
-          "Start from the entrance",
-          "Aisle 9 (Stationery & Office) is on the bottom left",
-        ];
-      case "Aisle 10":
-        return [
-          "Start from the entrance",
-          "Walk straight ahead",
-          "Reach Aisle 10 (Health & Wellness)",
-        ];
-      default:
-        return [
-          "Start from the entrance",
-          "Reach ${widget.aisle}",
-        ];
-    }
+    // 🔁 Replace this hardcoded map with Firestore call later if needed
+    const directions = {
+      "Aisle 1":
+      "Enter the store and walk straight or turn left. Head to the top-left corner near the exit. That's where you’ll find the produce section.",
+      "Aisle 2":
+      "Enter the store and turn left. Walk past the bakery and deli. The meat and seafood section is along the left wall.",
+      "Aisle 3":
+      "Enter the store and turn left. Walk up the left side of the store past the meat section. You'll find the dairy aisle next.",
+      "Aisle 4":
+      "Enter the store and turn left immediately. The bakery is in the bottom-left corner, next to the deli.",
+      "Aisle 5":
+      "Enter the store and walk straight ahead. The first horizontal aisle you reach is canned goods.",
+      "Aisle 6":
+      "Enter the store and walk straight. After passing Aisle 5, you’ll reach Aisle 6 — Pasta and Rice.",
+      "Aisle 7":
+      "Enter the store and walk straight. Aisle 7 — Herbs and Spices — is after Pasta and Rice.",
+      "Aisle 8":
+      "Enter the store and walk straight past Aisle 7. You’ll reach Aisle 8 — Frozen Foods.",
+      "Aisle 9":
+      "Enter and walk straight past Aisle 8. You’ll find Aisle 9 — Ice Cream and Desserts.",
+      "Aisle 10":
+      "Enter the store and walk straight. Aisle 10 — Breakfast and Cereals — is after Aisle 9.",
+      "Aisle 11":
+      "Enter the store and walk straight until the seventh row. That’s Aisle 11 — Snacks.",
+      "Aisle 12":
+      "Enter and go straight to the eighth row. You’ll find Aisle 12 — Beverages.",
+      "Aisle 13":
+      "Enter the store and walk to the last horizontal aisle above the salad bar. That’s Aisle 13 — Wine and Spirits.",
+      "Aisle 14":
+      "Enter the store and walk straight. Then turn right. Aisle 14 — Baby Products — is on the lower-right side.",
+      "Aisle 15":
+      "Enter the store and walk forward. Turn right, and go slightly up. You’ll reach Aisle 15 — Feminine Care.",
+      "Aisle 16":
+      "Enter the store and turn right. Go to the very bottom-right corner. That’s Aisle 16 — Personal Care.",
+      "Aisle 17":
+      "Enter the store and walk forward. Turn right toward the center-right wall. That’s Aisle 17 — Health and Wellness.",
+      "Aisle 18":
+      "Enter the store and walk forward. Turn right above Aisle 17. That’s Aisle 18 — Cleaning Supplies.",
+      "Aisle 19":
+      "Enter and walk forward. Turn right and go all the way to the top-right corner. That’s Household Essentials.",
+      "Aisle 20":
+      "Enter and walk forward. Turn right to the topmost part of the right side. You’ll reach Aisle 20 — Pet Supplies.",
+      "Aisle 21":
+      "Enter the store and turn right. Aisle 21 — Stationery — is near the bottom-right corner beside Personal Care.",
+      "Aisle 22":
+      "Enter the store and turn right. Just before you reach Personal Care, you’ll find Aisle 22 — Offers.",
+
+    };
+
+    final text = directions[aisle];
+    return text != null ? [text] : ["Please proceed to ${widget.aisle}."];
   }
 }

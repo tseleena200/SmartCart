@@ -306,7 +306,7 @@ class _SignUpViewState extends State<SignUpView> {
                                   password: passwordController.text.trim(),
                                   firstName: firstNameController.text.trim(),
                                   lastName: lastNameController.text.trim(),
-                                  phone: phoneController.text.trim(),
+                                  phone: isEmailSelected ? "" : phoneController.text.trim(),
                                   dob: dobController.text.trim(),
                                   branch: selectedBranch!,
                                   receivePromos: receivePromos,

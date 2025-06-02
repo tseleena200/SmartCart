@@ -42,9 +42,11 @@ class _SignInViewState extends State<SignInView> {
             height: media.height * 0.35,
             width: double.infinity,
             child: Image.asset(
-              "assets/img/sign_in_top.png",
+              "assets/img/1.png",
               fit: BoxFit.cover,
+              alignment: const Alignment(-0.7, 0), // Try -0.6 or -0.5 for more right shift
             ),
+
           ),
 
           // Card-style content area
@@ -53,7 +55,7 @@ class _SignInViewState extends State<SignInView> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.grey.shade50,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                 boxShadow: [
                   BoxShadow(

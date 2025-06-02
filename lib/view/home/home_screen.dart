@@ -19,9 +19,48 @@ class _HomeViewState extends State<HomeView> {
   int _currentBannerIndex = 0;
 
   List exclusiveOfferArr = [
-    {"name": "Organic Bananas", "icon": "assets/img/banana.png", "qty": "7", "unit": "pcs", "price": "\$1.99"},
-    {"name": "Red Apple", "icon": "assets/img/apple_red.png", "qty": "1", "unit": "Kg", "price": "\$4.99"},
-    {"name": "Ginger", "icon": "assets/img/ginger.png", "qty": "250", "unit": "gm", "price": "\$3.99"},
+    {
+      "productID": "1",
+      "name": "Organic Bananas",
+      "icon": "assets/img/banana.png",
+      "qty": "7",
+      "unit": "pcs",
+      "price": "\$1.99",
+      "RFIDCode": "RFID-BANANA01",
+      "stockLevel": 20,
+      "category": "Fruits",
+      "description": "Fresh organic bananas",
+      "discount": 0,
+      "anomalyFlag": false
+    },
+    {
+      "productID": "2",
+      "name": "Red Apple",
+      "icon": "assets/img/apple_red.png",
+      "qty": "1",
+      "unit": "Kg",
+      "price": "\$4.99",
+      "RFIDCode": "RFID-APPLE02",
+      "stockLevel": 15,
+      "category": "Fruits",
+      "description": "Crisp and juicy red apples",
+      "discount": 10,
+      "anomalyFlag": "popular"
+    },
+    {
+      "productID": "3",
+      "name": "Ginger",
+      "icon": "assets/img/ginger.png",
+      "qty": "250",
+      "unit": "gm",
+      "price": "\$3.99",
+      "RFIDCode": "RFID-GINGER03",
+      "stockLevel": 30,
+      "category": "Vegetables",
+      "description": "Fresh ginger root",
+      "discount": 0,
+      "anomalyFlag": false
+    },
   ];
 
   List groceriesArr = [
@@ -31,16 +70,92 @@ class _HomeViewState extends State<HomeView> {
   ];
 
   List newArrivalsArr = [
-    {"name": "Strawberries", "icon": "assets/img/strawberry.png", "qty": "1", "unit": "box", "price": "\$2.99"},
-    {"name": "Almond Milk", "icon": "assets/img/almondmilk.jpeg", "qty": "1", "unit": "Litre", "price": "\$4.49"},
+    {
+      "id": "004",
+      "name": "Strawberries",
+      "icon": "assets/img/strawberry.png",
+      "qty": "1",
+      "unit": "box",
+      "price": "\$2.99",
+      "rfid": "RFID004",
+      "stockLevel": 50,
+      "description": "Sweet strawberries freshly picked.",
+      "discount": 12,
+      "category": "Fruits",
+      "anomalyFlag": false,
+    },
+    {
+      "id": "005",
+      "name": "Almond Milk",
+      "icon": "assets/img/almondmilk.jpeg",
+      "qty": "1",
+      "unit": "Litre",
+      "price": "\$4.49",
+      "rfid": "RFID005",
+      "stockLevel": 75,
+      "description": "Lactose-free almond milk, great for health.",
+      "discount": 7,
+      "category": "Beverages",
+      "anomalyFlag": "popular",
+    }
   ];
 
   List popularArr = [
-    {"name": "Bell Pepper Red", "icon": "assets/img/bell_pepper_red.png", "qty": "1", "unit": "kg", "price": "\$2.99"},
-    {"name": "Ginger", "icon": "assets/img/ginger.png", "qty": "250", "unit": "gm", "price": "\$3.99"},
-    {"name": "Avocados", "icon": "assets/img/avacado.png", "qty": "3", "unit": "pcs", "price": "\$2.99"},
-    {"name": "Blueberries", "icon": "assets/img/blueberry.jpg", "qty": "1", "unit": "box", "price": "\$3.49"},
+    {
+      "id": "006",
+      "name": "Bell Pepper Red",
+      "icon": "assets/img/bell_pepper_red.png",
+      "qty": "1",
+      "unit": "kg",
+      "price": "\$2.99",
+      "rfid": "RFID006",
+      "stockLevel": 90,
+      "description": "Crisp and fresh red bell peppers.",
+      "discount": 10,
+      "category": "Vegetables",
+      "anomalyFlag": "popular"
+    },
+    {
+      "id": "007",
+      "name": "Ginger",
+      "icon": "assets/img/ginger.png",
+      "qty": "250",
+      "unit": "gm",
+      "price": "\$3.99",
+      "rfid": "RFID007",
+      "stockLevel": 60,
+      "description": "Premium quality ginger root.",
+      "discount": 5,
+      "category": "Vegetables"
+    },
+    {
+      "id": "008",
+      "name": "Avocados",
+      "icon": "assets/img/avacado.png",
+      "qty": "3",
+      "unit": "pcs",
+      "price": "\$2.99",
+      "rfid": "RFID008",
+      "stockLevel": 40,
+      "description": "Creamy avocados perfect for toast or salads.",
+      "discount": 8,
+      "category": "Fruits"
+    },
+    {
+      "id": "009",
+      "name": "Blueberries",
+      "icon": "assets/img/blueberry.jpg",
+      "qty": "1",
+      "unit": "box",
+      "price": "\$3.49",
+      "rfid": "RFID009",
+      "stockLevel": 35,
+      "description": "Antioxidant-rich blueberries.",
+      "discount": 10,
+      "category": "Fruits"
+    }
   ];
+
 
   List<String> bannerList = [
     "assets/img/1.png",
@@ -89,10 +204,13 @@ class _HomeViewState extends State<HomeView> {
           // Logo + Branch
           Row(
             children: [
-              Image.asset(
-                "assets/img/logo-transparent.png",
-                height: 36,
-                fit: BoxFit.contain,
+              SizedBox(
+                width: 55,
+                height: 55,
+                child: Image.asset(
+                  "assets/img/smrtcartlogo.png",
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(width: 12),
               Column(

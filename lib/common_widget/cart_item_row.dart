@@ -1,153 +1,122 @@
 import 'package:flutter/material.dart';
-
 import '../common/color_extension.dart';
 
 class CartItemRow extends StatelessWidget {
   final Map pObj;
 
-  const CartItemRow({
-    super.key,
-    required this.pObj,
-  });
+  const CartItemRow({super.key, required this.pObj});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: Container(
-        height: 120,
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        color: Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE1CCD6),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 70,
+            height: 70,
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Image.asset(
+              pObj["icon"],
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset(
-                  pObj["icon"],
-                  width: 80,
-                  height: 65,
-                  fit: BoxFit.contain,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        pObj["name"],
+                        style: TextStyle(
+                          color: TColor.primaryText,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {},
+                      child: Icon(Icons.close,
+                          size: 18, color: TColor.primaryText),
+                    ),
+                  ],
                 ),
-               const  SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    pObj["name"],
-                                    style: TextStyle(
-                                      color: TColor.primaryText,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                                InkWell(
-                                  onTap: (){},
-                                  child: Image.asset(
-                                    "assets/img/close.png",
-                                    width: 15,
-                                    height: 15,
-                                    color: TColor.secondaryText,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-
-                        const SizedBox(
-                          height: 2,
-                        ),
-                        Text(
-                          "${pObj["unit"]}",
-                          style: TextStyle(
-                            color: TColor.secondaryText,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          children: [
-                            InkWell(
-                              onTap: () {},
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(
-                                      color: TColor.placeholder.withOpacity(0.5), width: 1),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                alignment: Alignment.center,
-                                child: Image.asset(
-                                  "assets/img/subtack.png",
-                                  width: 15,
-                                  height: 15,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 15,),
-                            Text(
-                              pObj["qty"].toString(),
-                              style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 15,),
-                            InkWell(
-                              onTap: () {},
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(
-                                      color: TColor.placeholder.withOpacity(0.5),
-                                      width: 1),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                alignment: Alignment.center,
-                                child: Image.asset(
-                                  "assets/img/add_green.png",
-                                  width: 16,
-                                  height: 16,
-                                ),
-                              ),
-                            ),
-
-                            const Spacer(),
-                            Text(
-                              "\$${pObj["price"]}",
-                              style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        )
-
-                      ]),
+                const SizedBox(height: 4),
+                Text(
+                  pObj["unit"],
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: TColor.secondaryText,
+                  ),
                 ),
-
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _qtyButton(icon: Icons.remove, onTap: () {}),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        "${pObj["qty"]}",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          color: TColor.primaryText,
+                        ),
+                      ),
+                    ),
+                    _qtyButton(icon: Icons.add, onTap: () {}),
+                    const Spacer(),
+                    Text(
+                      "\$${pObj["price"]}",
+                      style: TextStyle(
+                        color: TColor.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  ],
+                ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-
-
-          ],
+  Widget _qtyButton({required IconData icon, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: TColor.primary,
+          borderRadius: BorderRadius.circular(10),
         ),
+        child: Icon(icon, size: 18, color: Colors.white),
       ),
     );
   }

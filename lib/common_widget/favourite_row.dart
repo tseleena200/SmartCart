@@ -20,14 +20,14 @@ class _FavouriteRowState extends State<FavouriteRow> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F8F8),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFE1CCD6), // ✅ Matches CartItemRow
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          )
+            color: Colors.black12.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Row(
@@ -37,8 +37,8 @@ class _FavouriteRowState extends State<FavouriteRow> {
             height: 60,
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2F2F2),
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Image.asset(
               widget.pObj["icon"],
@@ -84,34 +84,14 @@ class _FavouriteRowState extends State<FavouriteRow> {
                       children: [
                         Text(
                           widget.pObj["price"],
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF87486E),
+                            color: TColor.primary,
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Stack(
-                          alignment: Alignment.topRight,
-                          children: [
-                            const Icon(Icons.shopping_cart_outlined, size: 20, color: Colors.grey),
-                            Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: const BoxDecoration(
-                                color: Colors.black,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                (widget.pObj["cartQty"] ?? "1").toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
+
                       ],
                     ),
                   ],
@@ -130,12 +110,12 @@ class _FavouriteRowState extends State<FavouriteRow> {
             child: Container(
               decoration: BoxDecoration(
                 color: isAdded ? Colors.green : TColor.primary,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
               ),
               padding: const EdgeInsets.all(10),
               child: Icon(
                 isAdded ? Icons.check : Icons.add,
-                color: Colors.white,
+                color: Colors.white, // ✅ white icon
                 size: 20,
               ),
             ),

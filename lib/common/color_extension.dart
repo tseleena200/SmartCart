@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TColor {
-  // 🎨 Base Pink Accent (Don’t Touch)
+  // 🎨 Base Pink Accent
   static const Color moss = Color(0xFF87486E); // Your primary pink
 
   // 🌸 Soft Pastel Pinks
@@ -10,7 +10,7 @@ class TColor {
   static const Color petal = Color(0xFFFFF4F8);     // Card bg
   static const Color bubble = Color(0xFFFFC4D6);    // Border / subtle bg
 
-  // ✅ Theme Usage Mapping
+  //  Theme Usage Mapping
 
   // Primary color for buttons, icons, highlights
   static Color get primary => moss;
