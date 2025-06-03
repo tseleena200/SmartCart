@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../AdminCategory/add_category.dart';
+import '../../AdminCategory/admin_category.dart';
+import '../../products/add_product_view.dart';
+import '../../products/product_list_view.dart';
 import '../../users/users_screen.dart';
 
 class SideMenu extends StatelessWidget {
@@ -32,19 +36,44 @@ class SideMenu extends StatelessWidget {
             },
           ),
           DrawerListTile(
-            title: "Task",
+            title: "Manage Products",
             svgSrc: "assets/icons/menu_task.svg",
-            press: () {},
+            press: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProductListView()),
+              );
+            },
           ),
           DrawerListTile(
-            title: "Documents",
-            svgSrc: "assets/icons/menu_doc.svg",
-            press: () {},
+            title: "Add Products",
+            svgSrc: "assets/icons/menu_task.svg",
+            press: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddProductView()),
+              );
+            },
           ),
           DrawerListTile(
-            title: "Store",
-            svgSrc: "assets/icons/menu_store.svg",
-            press: () {},
+            title: "Manage Categories",
+            svgSrc: "assets/icons/menu_task.svg",
+            press: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AdminCategoryListView()),
+              );
+            },
+          ),
+          DrawerListTile(
+            title: " Add Categories",
+            svgSrc: "assets/icons/menu_task.svg",
+            press: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddCategoryView()),
+              );
+            },
           ),
           DrawerListTile(
             title: "Notification",
