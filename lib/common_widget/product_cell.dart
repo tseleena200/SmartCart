@@ -22,6 +22,7 @@ class ProductCell extends StatelessWidget {
     final double price = double.tryParse((pObj["price"] ?? "0").toString().replaceAll("\$", "")) ?? 0;
     final int discount = pObj["discount"] is int ? pObj["discount"] : 0;
     final double finalPrice = price * (1 - discount / 100);
+    final bool isPopular = pObj["isPopular"] == true;
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -51,18 +52,22 @@ class ProductCell extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
-                  height: 80,
-                  child: Image.asset(
-                    pObj["icon"] ?? "",
+                  height: 90,
+                  child: pObj["imageURL"] != null && pObj["imageURL"].toString().isNotEmpty
+                      ? Image.network(
+                    pObj["imageURL"],
                     fit: BoxFit.contain,
-                  ),
+                    errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image, size: 40),
+                  )
+                      : const Icon(Icons.image, size: 40),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 Text(
-                  pObj["name"] ?? "",
+                  pObj["productName"] ?? "",
                   style: TextStyle(
                     color: TColor.primaryText,
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
@@ -70,18 +75,15 @@ class ProductCell extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  "${pObj["qty"] ?? ''} ${pObj["unit"] ?? ''}",
-                  style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 13,
+                if (pObj["unitValue"] != null && pObj["unitType"] != null)
+                  Text(
+                    "${pObj["unitValue"]} ${pObj["unitType"]}",
+                    style: const TextStyle(fontSize: 13, color: Colors.black87),
                   ),
-                ),
-                const SizedBox(height: 6),
                 if (pObj["stockLevel"] != null)
                   Text(
                     "In Stock: ${pObj["stockLevel"]}",
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 const Spacer(),
                 Row(
@@ -141,19 +143,23 @@ class ProductCell extends StatelessWidget {
                 ),
               ],
             ),
-            if (pObj["anomalyFlag"] == "popular")
+            if (isPopular)
               Positioned(
                 top: 0,
-                right: 0,
+                left: 0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.redAccent,
+                    color: const Color(0xFFFFC1CC), // pastel pink
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Text(
                     "🔥 Trending",
-                    style: TextStyle(color: Colors.white, fontSize: 10),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                 ),
               ),

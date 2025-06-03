@@ -227,12 +227,35 @@ class AuthController extends GetxController {
     required String password,
   }) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      //  Set account status to "Active"
-      await _firestore.collection('Users')
-          .doc(_auth.currentUser!.uid)
-          .update({
+      final String uid = userCredential.user!.uid;
+      final DocumentSnapshot userDoc = await _firestore.collection('Users').doc(uid).get();
+
+      if (!userDoc.exists) {
+        Get.snackbar("Error", "User data not found.",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: TColor.error,
+            colorText: Colors.white);
+        return;
+      }
+
+      final data = userDoc.data() as Map<String, dynamic>;
+
+      if (data.containsKey('accountStatus') && data['accountStatus'] == 'Suspended') {
+        await _auth.signOut();
+        Get.snackbar("Access Denied", "Your account has been suspended.",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red.shade300,
+            colorText: Colors.white);
+        return;
+      }
+
+      // Optionally update status to Active
+      await _firestore.collection('Users').doc(uid).update({
         'accountStatus': 'Active',
       });
 
@@ -291,6 +314,7 @@ class AuthController extends GetxController {
       codeAutoRetrievalTimeout: (String verificationId) {},
     );
   }
+
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);

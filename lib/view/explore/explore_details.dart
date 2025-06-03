@@ -1,9 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../common/color_extension.dart';
 import '../../common_widget/product_cell.dart';
+import '../home/product_details_screen.dart';
 import '../navigation/navigation_screen.dart';
 import 'filter_view.dart';
-
 
 class ExploreDetailsView extends StatefulWidget {
   final Map eObj;
@@ -14,51 +15,6 @@ class ExploreDetailsView extends StatefulWidget {
 }
 
 class _ExploreDetailsViewState extends State<ExploreDetailsView> {
-  List listArr = [
-    {
-      "name": "Diet Coke",
-      "icon": "assets/img/diet_coke.png",
-      "qty": "355",
-      "unit": "ml, Price",
-      "price": "\$1.99"
-    },
-    {
-      "name": "Sprite Can",
-      "icon": "assets/img/sprite_can.png",
-      "qty": "325",
-      "unit": "ml, Price",
-      "price": "\$1.49"
-    },
-    {
-      "name": "Apple & Grape Juice",
-      "icon": "assets/img/juice_apple_grape.png",
-      "qty": "2",
-      "unit": "L, Price",
-      "price": "\$15.99"
-    },
-    {
-      "name": "Orange Juice",
-      "icon": "assets/img/orange_juice.png",
-      "qty": "2",
-      "unit": "L, Price",
-      "price": "\$15.49"
-    },
-    {
-      "name": "Coca Cola Can",
-      "icon": "assets/img/cocacola_can.png",
-      "qty": "325",
-      "unit": "ml, Price",
-      "price": "\$4.99"
-    },
-    {
-      "name": "Pepsi Can",
-      "icon": "assets/img/pepsi_can.png",
-      "qty": "325",
-      "unit": "ml, Price",
-      "price": "\$4.49"
-    }
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,10 +37,9 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
           IconButton(
             onPressed: () {
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FilterView(),
-                  ));
+                context,
+                MaterialPageRoute(builder: (context) => const FilterView()),
+              );
             },
             icon: Image.asset(
               "assets/img/filter_ic.png",
@@ -133,23 +88,56 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
             ),
           ),
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
-              ),
-              itemCount: listArr.length,
-              itemBuilder: (context, index) {
-                var pObj = listArr[index] as Map? ?? {};
-                return ProductCell(
-                  pObj: pObj,
-                  margin: 0,
-                  weight: double.maxFinite,
-                  onPressed: () {},
-                  onCart: () {},
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('Products')
+                  .where('category', isEqualTo: widget.eObj['name'])
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text("No products in this category."));
+                }
+
+                final products = snapshot.data!.docs;
+
+                return GridView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.75,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                  ),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final data = products[index].data() as Map<String, dynamic>;
+
+                    return ProductCell(
+                      pObj: {
+                        "productName": data["productName"],
+                        "imageURL": data["imageURL"],
+                        "price": data["price"],
+                        "stockLevel": data["stockLevel"],
+                        "discount": data["discount"],
+                        "isPopular": data["isPopular"],
+                      },
+                      margin: 0,
+                      weight: double.maxFinite,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProductDetails(product: data),
+                          ),
+                        );
+
+                      },
+                      onCart: () {},
+                    );
+                  },
                 );
               },
             ),

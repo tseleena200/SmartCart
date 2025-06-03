@@ -30,6 +30,6 @@ class TColor {
   static Color get darkGrey => const Color(0xFF2F2F2F);      // Fallback
 
   // Feedback
-  static Color get success => const Color(0xFFB7E4C7);       // Pastel green
-  static Color get error => const Color(0xFFE57373);         // Warm red
+  static Color get success => const Color(0xFF03452C);       // Pastel green
+  static Color get error => const Color(0xFF450303);         // Warm red
 }

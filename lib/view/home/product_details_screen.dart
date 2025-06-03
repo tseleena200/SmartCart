@@ -1,27 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-
 import '../../common/color_extension.dart';
 import '../../common_widget/round_button.dart';
 
 class ProductDetails extends StatefulWidget {
-  const ProductDetails({super.key});
+  final Map<String, dynamic> product;
+
+  const ProductDetails({super.key, required this.product});
 
   @override
   State<ProductDetails> createState() => _ProductDetailsState();
 }
 
 class _ProductDetailsState extends State<ProductDetails> {
+  int quantity = 1;
+  bool isExpanded = false;
+
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.sizeOf(context);
 
-    final double originalPrice = 5.49;
-    final double discount = 10; // in percent
-    final double finalPrice = originalPrice * (1 - discount / 100);
-    final int stockLevel = 15;
-    final bool isTrending = true;
-    final bool isExclusive = true;
+    final product = widget.product;
+    final String imageUrl = product['imageURL'] ?? '';
+    final String name = product['productName'] ?? 'Unnamed';
+    final String description = product['description'] ?? 'No description available.';
+    final int stockLevel = product['stockLevel'] ?? 0;
+    final double price = (product['price'] ?? 0).toDouble();
+    final double discount = (product['discount'] ?? 0).toDouble();
+    final bool isTrending = product['isPopular'] == true;
+    final bool isExclusive = product['isExclusive'] == true;
+    final double finalPrice = price * (1 - discount / 100);
+    final String nutrition = product['nutrition'] ?? '';
+    final String unitLabel =
+    (product['unitValue'] != null && product['unitType'] != null)
+        ? '${product['unitValue']} ${product['unitType']}'
+        : '';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -35,25 +48,23 @@ class _ProductDetailsState extends State<ProductDetails> {
                   width: double.infinity,
                   height: media.width * 0.75,
                   decoration: const BoxDecoration(
-                    color: Color(0xffF2F3F2),
+                    color: Color(0xffF9F9F9),
                     borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
+                      bottomLeft: Radius.circular(28),
+                      bottomRight: Radius.circular(28),
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 60), // prevent overlap with status bar
+                    padding: const EdgeInsets.only(top: 60),
                     child: Center(
-                      child: Image.asset(
-                        "assets/img/apple_red.png",
+                      child: Image.network(
+                        imageUrl,
                         width: media.width * 0.70,
                         fit: BoxFit.contain,
                       ),
                     ),
                   ),
                 ),
-
-                // Back Button
                 Positioned(
                   top: 40,
                   left: 16,
@@ -66,37 +77,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                     ),
                   ),
                 ),
-
-                // Share Button
-                Positioned(
-                  top: 40,
-                  right: 16,
-                  child: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    radius: 20,
-                    child: IconButton(
-                      icon: const Icon(Icons.share_outlined, color: Colors.black, size: 18),
-                      onPressed: () {},
-                    ),
-                  ),
-                ),
-
-                // Trending Badge
-                if (isTrending)
-                  Positioned(
-                    top: 100,
-                    left: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.redAccent,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text("🔥 Trending", style: TextStyle(fontSize: 10, color: Colors.white)),
-                    ),
-                  ),
-
-                // Exclusive Badge
                 if (isExclusive)
                   Positioned(
                     top: 100,
@@ -112,8 +92,9 @@ class _ProductDetailsState extends State<ProductDetails> {
                   ),
               ],
             ),
+
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -121,7 +102,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                     children: [
                       Expanded(
                         child: Text(
-                          "Natural Red Apples",
+                          name,
                           style: TextStyle(
                             color: TColor.primaryText,
                             fontSize: 24,
@@ -130,52 +111,59 @@ class _ProductDetailsState extends State<ProductDetails> {
                         ),
                       ),
                       IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: Image.asset("assets/img/fav.png", width: 25, height: 25),
+                        onPressed: () {},
+                        icon: const Icon(Icons.favorite_border, color: Colors.grey),
                       ),
                     ],
                   ),
-                  Text("In Stock: $stockLevel", style: TextStyle(fontSize: 12, color: Colors.black54)),
-                  const SizedBox(height: 15),
+
+                  Text(
+                    "$unitLabel • In Stock: $stockLevel",
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+
+                  const SizedBox(height: 20),
+
                   Row(
                     children: [
                       InkWell(
-                        onTap: () {},
-                        child: Padding(
-                          padding: const EdgeInsets.all(15.0),
-                          child: Image.asset("assets/img/subtack.png", width: 20, height: 20),
+                        onTap: () => setState(() => quantity = quantity > 1 ? quantity - 1 : 1),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey.shade200,
+                          ),
+                          child: const Icon(Icons.remove, size: 20),
                         ),
                       ),
-                      Container(
-                        width: 45,
-                        height: 45,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: TColor.placeholder.withOpacity(0.5), width: 1),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text("1", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                      ),
+                      const SizedBox(width: 12),
+                      Text("$quantity", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      const SizedBox(width: 12),
                       InkWell(
-                        onTap: () {},
-                        child: Image.asset("assets/img/add_green.png", width: 20, height: 20),
+                        onTap: () => setState(() => quantity++),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.green,
+                          ),
+                          child: const Icon(Icons.add, size: 20, color: Colors.white),
+                        ),
                       ),
                       const Spacer(),
-                      discount > 0
-                          ? Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            "\$${originalPrice.toStringAsFixed(2)}",
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 13,
-                              decoration: TextDecoration.lineThrough,
+                          if (discount > 0)
+                            Text(
+                              "\$${price.toStringAsFixed(2)}",
+                              style: const TextStyle(
+                                decoration: TextDecoration.lineThrough,
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
                             ),
-                          ),
                           Text(
                             "\$${finalPrice.toStringAsFixed(2)}",
                             style: TextStyle(
@@ -185,86 +173,95 @@ class _ProductDetailsState extends State<ProductDetails> {
                             ),
                           ),
                         ],
-                      )
-                          : Text("\$${originalPrice.toStringAsFixed(2)}",
-                          style: TextStyle(
-                            color: TColor.primary,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                          )),
+                      ),
                     ],
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(thickness: 1.2, color: Color(0xffEEEEEE)),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Theme(
+                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    child: StatefulBuilder(
+                      builder: (context, setState) => ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        onExpansionChanged: (val) => setState(() => isExpanded = val),
+                        title: const Text(
+                          "Product Details",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: !isExpanded
+                            ? Text(
+                          description,
+                          style: TextStyle(color: TColor.primary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                            : null,
+                        children: isExpanded
+                            ? [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Text(
+                              description,
+                              style: const TextStyle(fontSize: 13, height: 1.5),
+                            ),
+                          ),
+                        ]
+                            : [],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Theme(
+                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      tilePadding: EdgeInsets.zero,
+                      title: const Text("Nutrition", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      subtitle: Text(nutrition.split(',').first),
+                      children: [
+                        Text(
+                          nutrition.replaceAll(',', '\n•'),
+                          style: const TextStyle(fontSize: 13, height: 1.5),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 15),
-                  const Divider(color: Colors.black38, height: 1),
-                  const SizedBox(height: 8),
+
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
-                        child: Text("Product Details",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Image.asset("assets/img/detail_open.png", width: 15, height: 15),
+                      const Text("Review", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      Row(
+                        children: [
+                          RatingBar.builder(
+                            initialRating: 4.5,
+                            minRating: 1,
+                            direction: Axis.horizontal,
+                            allowHalfRating: true,
+                            itemCount: 5,
+                            itemSize: 16,
+                            ignoreGestures: true,
+                            itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
+                            onRatingUpdate: (rating) {},
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+                        ],
                       ),
                     ],
                   ),
-                  const Text(
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 15),
-                  const Divider(color: Colors.black38, height: 1),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text("Nutrition", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                        height: 25,
-                        decoration: BoxDecoration(
-                          color: TColor.placeholder.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text("100g", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600)),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Image.asset("assets/img/next.png", width: 15, height: 15, color: TColor.primaryText),
-                      ),
-                    ],
-                  ),
-                  const Divider(color: Colors.black38, height: 1),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text("Review", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                      ),
-                      IgnorePointer(
-                        ignoring: true,
-                        child: RatingBar.builder(
-                          initialRating: 4.5,
-                          minRating: 1,
-                          direction: Axis.horizontal,
-                          allowHalfRating: true,
-                          itemCount: 5,
-                          itemSize: 15,
-                          itemBuilder: (context, _) => const Icon(Icons.star, color: Color(0xffF3603F)),
-                          onRatingUpdate: (rating) {},
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Image.asset("assets/img/next.png", width: 15, height: 15, color: TColor.primaryText),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  RoundButton(title: " Simulate Scan", onPressed: () {}),
+
+                  const SizedBox(height: 90),
+                  RoundButton(title: "Simulate Scan", onPressed: () {}),
                 ],
               ),
             )

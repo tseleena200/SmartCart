@@ -12,11 +12,11 @@ class ExploreCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bgColor = pObj["color"] ?? const Color(0xFFE6F6EC);
-    final String title = pObj["name"] ?? "";
-    final String subtitle = pObj["sub"] ?? "";
-    final String aisle = pObj["aisle"] ?? "";
-    final String icon = pObj["icon"] ?? "";
+    final Color bgColor = pObj["color"] as Color? ?? const Color(0xFFE6F6EC);
+    final String title = pObj["name"] as String? ?? "";
+    final String subtitle = pObj["sub"] as String? ?? "";
+    final String aisle = pObj["aisle"] as String? ?? "";
+    final String iconUrl = pObj["icon"] as String? ?? "";
 
     return InkWell(
       onTap: onPressed,
@@ -33,9 +33,8 @@ class ExploreCell extends StatelessWidget {
             // Left: Text info
             Expanded(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
@@ -48,29 +47,31 @@ class ExploreCell extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black,
-                    ),
+                    style: const TextStyle(fontSize: 12, color: Colors.black),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     aisle,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.black,
-                    ),
+                    style: const TextStyle(fontSize: 11, color: Colors.black),
                   ),
                 ],
               ),
             ),
 
-            // Right: Image
-            Image.asset(
-              icon,
-              width: 58,
-              height: 58,
-              fit: BoxFit.contain,
+            // Right: Load image from network (Firestore URL)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                iconUrl,
+                width: 58,
+                height: 58,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.broken_image,
+                  size: 40,
+                  color: Colors.grey,
+                ),
+              ),
             ),
           ],
         ),
