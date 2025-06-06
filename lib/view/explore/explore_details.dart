@@ -123,6 +123,7 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
                         "stockLevel": data["stockLevel"],
                         "discount": data["discount"],
                         "isPopular": data["isPopular"],
+                        "isNewArrival": data["isNewArrival"],
                       },
                       margin: 0,
                       weight: double.maxFinite,

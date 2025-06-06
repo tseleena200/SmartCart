@@ -7,12 +7,16 @@ class ProductCell extends StatelessWidget {
   final VoidCallback onCart;
   final double margin;
   final double weight;
+  final VoidCallback? onFavoriteToggle;
+  final bool isFavorite;
 
   const ProductCell({
     super.key,
     required this.pObj,
     required this.onPressed,
     required this.onCart,
+    this.onFavoriteToggle,
+    this.isFavorite = false,
     this.margin = 8,
     this.weight = 180,
   });
@@ -23,6 +27,7 @@ class ProductCell extends StatelessWidget {
     final int discount = pObj["discount"] is int ? pObj["discount"] : 0;
     final double finalPrice = price * (1 - discount / 100);
     final bool isPopular = pObj["isPopular"] == true;
+    final bool isNewArrival = pObj["isNewArrival"] == true;
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -119,26 +124,38 @@ class ProductCell extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: onCart,
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: TColor.primary,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: TColor.primary.withOpacity(0.25),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+                    if (onFavoriteToggle != null)
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: onFavoriteToggle,
+                        child: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red.shade800 : Colors.grey,
+                          size: 24,
                         ),
-                        child: const Icon(Icons.add, color: Colors.white, size: 20),
+                      )
+                    else
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: onCart,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: TColor.primary,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: TColor.primary.withOpacity(0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.add, color: Colors.white, size: 20),
+                        ),
                       ),
-                    ),
+
                   ],
                 ),
               ],
@@ -150,7 +167,7 @@ class ProductCell extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFC1CC), // pastel pink
+                    color: const Color(0xFFFFC1CC), // Pastel pink
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Text(
@@ -163,6 +180,27 @@ class ProductCell extends StatelessWidget {
                   ),
                 ),
               ),
+            if (isNewArrival)
+              Positioned(
+                top: isPopular ? 28 : 0,
+                left: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF96BEE6), // Pastel blue
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    "🆕 New",
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+
           ],
         ),
       ),

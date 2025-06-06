@@ -51,12 +51,15 @@ class _HomeViewState extends State<HomeView> {
   Stream<QuerySnapshot> _fetchNewArrivals() {
     return FirebaseFirestore.instance
         .collection('Products')
-        .where('isExclusive', isEqualTo: false)
-        .where('isPopular', isEqualTo: false)
+        .where('isNewArrival', isEqualTo: true)
+        .where('createdAt', isGreaterThan: Timestamp.fromMillisecondsSinceEpoch(0))
         .orderBy('createdAt', descending: true)
         .limit(10)
         .snapshots();
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -247,10 +250,15 @@ class _HomeViewState extends State<HomeView> {
                         context,
                         MaterialPageRoute(builder: (_) => ProductDetails(product: data)),
                       ),
-                      onCart: () => ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("${data['productName']} added to cart")),
-                      ),
+                      isFavorite: false, // You can change this based on actual Firestore check
+                      onCart: () {}, // Still required unless you make it optional
+                      onFavoriteToggle: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Toggled favorite: ${data['productName']}")),
+                        );
+                      },
                     ),
+
                   );
                 },
               );
