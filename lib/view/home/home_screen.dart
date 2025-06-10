@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -244,22 +245,53 @@ class _HomeViewState extends State<HomeView> {
                   final data = docs[index].data() as Map<String, dynamic>;
                   return Padding(
                     padding: const EdgeInsets.only(left: 16),
-                    child: ProductCell(
-                      pObj: data,
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => ProductDetails(product: data)),
-                      ),
-                      isFavorite: false, // You can change this based on actual Firestore check
-                      onCart: () {}, // Still required unless you make it optional
-                      onFavoriteToggle: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Toggled favorite: ${data['productName']}")),
+                    child: StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('Users')
+                          .doc(FirebaseAuth.instance.currentUser!.uid)
+                          .collection('Favorites')
+                          .doc(data['productID'])
+                          .snapshots(),
+                      builder: (context, favSnapshot) {
+                        final isFavorited = favSnapshot.data?.exists ?? false;
+
+                        return ProductCell(
+                          pObj: data,
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => ProductDetails(product: data)),
+                          ),
+                          isFavorite: isFavorited,
+                          onCart: () {},
+                          onFavoriteToggle: () async {
+                            final uid = FirebaseAuth.instance.currentUser!.uid;
+                            final favRef = FirebaseFirestore.instance
+                                .collection('Users')
+                                .doc(uid)
+                                .collection('Favorites')
+                                .doc(data['productID']);
+
+                            if (isFavorited) {
+                              await favRef.delete();
+                            } else {
+                              await favRef.set({
+                                'productID': data['productID'],
+                                'productName': data['productName'],
+                                'imageURL': data['imageURL'],
+                                'price': (data['price'] ?? 0).toDouble(),
+                                'discount': (data['discount'] ?? 0).toDouble(),
+                                'finalPrice': ((data['price'] ?? 0) * (1 - (data['discount'] ?? 0) / 100)).toDouble(),
+                                'category': data['category'],
+                                'favoritedAt': Timestamp.now(),
+                                'userName': FirebaseAuth.instance.currentUser?.displayName ?? "Unknown",
+                              });
+                            }
+                          },
                         );
                       },
                     ),
-
                   );
+
                 },
               );
             },

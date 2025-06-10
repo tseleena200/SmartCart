@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../common/color_extension.dart';
 
 class FavouriteRow extends StatefulWidget {
-  final Map pObj;
+  final Map<String, dynamic> pObj;
   final VoidCallback onPressed;
 
   const FavouriteRow({super.key, required this.pObj, required this.onPressed});
@@ -20,7 +20,7 @@ class _FavouriteRowState extends State<FavouriteRow> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFE1CCD6), // ✅ Matches CartItemRow
+        color: const Color(0xFFE1CCD6),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -40,9 +40,10 @@ class _FavouriteRowState extends State<FavouriteRow> {
               color: Colors.grey.shade100,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Image.asset(
-              widget.pObj["icon"],
+            child: Image.network(
+              widget.pObj["imageURL"] ?? '',
               fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
             ),
           ),
           const SizedBox(width: 14),
@@ -51,18 +52,10 @@ class _FavouriteRowState extends State<FavouriteRow> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.pObj["name"],
+                  widget.pObj["productName"] ?? "Unnamed",
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "${widget.pObj["qty"]} ${widget.pObj["unit"]}",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: TColor.secondaryText,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -75,7 +68,7 @@ class _FavouriteRowState extends State<FavouriteRow> {
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: Text(
-                        widget.pObj["status"] ?? "In Stock",
+                        widget.pObj["category"] ?? "In Stock",
                         style: const TextStyle(fontSize: 11, color: Colors.green),
                       ),
                     ),
@@ -83,15 +76,13 @@ class _FavouriteRowState extends State<FavouriteRow> {
                     Row(
                       children: [
                         Text(
-                          widget.pObj["price"],
+                          "\$${widget.pObj["finalPrice"]?.toStringAsFixed(2) ?? '0.00'}",
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: TColor.primary,
                           ),
                         ),
-                        const SizedBox(width: 6),
-
                       ],
                     ),
                   ],
@@ -115,7 +106,7 @@ class _FavouriteRowState extends State<FavouriteRow> {
               padding: const EdgeInsets.all(10),
               child: Icon(
                 isAdded ? Icons.check : Icons.add,
-                color: Colors.white, // ✅ white icon
+                color: Colors.white,
                 size: 20,
               ),
             ),

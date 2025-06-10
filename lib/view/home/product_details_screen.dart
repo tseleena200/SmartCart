@@ -7,6 +7,9 @@ import '../../controllers/cart_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../controllers/favorite_controller.dart';
+import '../../reviews/all_reviews.dart';
+import '../../reviews/review_sheet.dart';
 import '../rfid/rfid_removal_overlay.dart';
 import '../rfid/rfid_scan_overlay.dart';
 
@@ -25,11 +28,13 @@ class _ProductDetailsState extends State<ProductDetails> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   int scannedCount = 0;
+  bool isFavorited = false;
 
   @override
   void initState() {
     super.initState();
     _loadScannedCount();
+    _checkIfFavorited();
   }
 
   Future<void> _loadScannedCount() async {
@@ -49,6 +54,25 @@ class _ProductDetailsState extends State<ProductDetails> {
       }
     }
   }
+  Future<void> _checkIfFavorited() async {
+    final userId = _auth.currentUser?.uid;
+    final productId = widget.product['productID'];
+
+    if (userId != null && productId != null) {
+      final favSnap = await _firestore
+          .collection('Users')
+          .doc(userId)
+          .collection('Favorites')
+          .doc(productId)
+          .get();
+
+      setState(() {
+        isFavorited = favSnap.exists;
+      });
+    }
+  }
+
+
 
   Future<void> _removeFromCart(String rfidCode) async {
     await cartController.removeProductFromCartByRFID(rfidCode);
@@ -72,7 +96,7 @@ class _ProductDetailsState extends State<ProductDetails> {
         (product['unitValue'] != null && product['unitType'] != null)
             ? '${product['unitValue']} ${product['unitType']}'
             : '';
-
+    final FavoriteController favoriteController = Get.put(FavoriteController());
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -124,7 +148,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.deepPurple,
+                        color: Colors.red.shade800,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text("Exclusive",
@@ -147,11 +171,47 @@ class _ProductDetailsState extends State<ProductDetails> {
                                 fontWeight: FontWeight.bold,
                                 color: TColor.primaryText)),
                       ),
+
                       IconButton(
-                        icon: const Icon(Icons.favorite_border,
-                            color: Colors.grey),
-                        onPressed: () {},
+                        icon: Icon(
+                          isFavorited ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorited ? Colors.red.shade800 : Colors.grey,
+                        ),
+                          onPressed: () async {
+                            final user = FirebaseAuth.instance.currentUser;
+                            final product = widget.product;
+
+                            if (user != null) {
+                              final userDoc = await FirebaseFirestore.instance
+                                  .collection('Users')
+                                  .doc(user.uid)
+                                  .get();
+
+                              final userName = userDoc.data()?['name'] ?? "Unknown";
+
+                              if (isFavorited) {
+                                await favoriteController.removeFromFavorites(product['productID']);
+                              } else {
+                                await favoriteController.addToFavorites(
+                                  productID: product['productID'],
+                                  productName: product['productName'],
+                                  imageURL: product['imageURL'],
+                                  price: (product['price'] ?? 0).toDouble(),
+                                  discount: (product['discount'] ?? 0).toDouble(),
+                                  finalPrice: (product['price'] ?? 0) * (1 - (product['discount'] ?? 0) / 100),
+                                  category: product['category'],
+                                  userName: userName,
+                                );
+                              }
+
+                              setState(() {
+                                isFavorited = !isFavorited;
+                              });
+                            }
+                          }
+
                       ),
+
                     ],
                   ),
                   Text("$unitLabel • In Stock: $stockLevel",
@@ -248,29 +308,71 @@ class _ProductDetailsState extends State<ProductDetails> {
                     color: Colors.black12,
                   ),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0), // Matches ExpansionTile spacing
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Review",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        Row(
-                          children: [
-                            RatingBarIndicator(
-                              rating: 4.5,
-                              itemCount: 5,
-                              itemSize: 16,
-                              itemBuilder: (context, _) =>
-                              const Icon(Icons.star, color: Colors.amber),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(Icons.chevron_right, color: Colors.grey),
-                          ],
-                        ),
-                      ],
+                  // ✅ Step 2: In build(), find the "Review" row and wrap it with GestureDetector
+                  GestureDetector(
+                    onTap: () {
+                      Get.to(() => AllReviewsScreen(
+                        productId: product['productID'],
+                        currentUserId: FirebaseAuth.instance.currentUser!.uid,
+                        productName: product['productName'],
+
+                      ));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('Reviews')
+                            .where('productID', isEqualTo: product['productID'])
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: const [
+                                Text("Review", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                Row(
+                                  children: [
+                                    Text("No ratings yet", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                                    Icon(Icons.chevron_right, color: Colors.grey),
+                                  ],
+                                ),
+                              ],
+                            );
+                          }
+
+                          final docs = snapshot.data!.docs;
+                          double total = 0.0;
+                          for (var doc in docs) {
+                            total += (doc['rating'] ?? 0).toDouble();
+                          }
+                          final avgRating = total / docs.length;
+
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text("Review", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                              Row(
+                                children: [
+                                  RatingBarIndicator(
+                                    rating: avgRating,
+                                    itemCount: 5,
+                                    itemSize: 16,
+                                    itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(avgRating.toStringAsFixed(1), style: const TextStyle(fontSize: 14, color: Colors.black54)),
+                                  const Icon(Icons.chevron_right, color: Colors.grey),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
+
+
                   const SizedBox(height: 20),
                   const Divider(
                     height: 10,
