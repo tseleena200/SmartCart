@@ -293,7 +293,9 @@ class _MyCartViewState extends State<MyCartView> {
                 String total = "\$0.00";
                 if (snapshot.hasData && snapshot.data!.exists) {
                   final data = snapshot.data!.data() as Map<String, dynamic>;
-                  total = data['totalAmount'] ?? "\$0.00";
+                  double amount = (data['totalAmount'] ?? 0).toDouble();
+                  total = "\$${amount.toStringAsFixed(2)}";
+
                 }
                 return MaterialButton(
                   onPressed: showCheckout,

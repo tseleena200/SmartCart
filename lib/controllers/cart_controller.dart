@@ -70,7 +70,8 @@ class CartController extends GetxController {
         'userName': userName,
         'cartStatus': 'active',
         'items': items,
-        'totalAmount': "\$${total.toStringAsFixed(2)}",
+        'totalAmount': double.parse(total.toStringAsFixed(2)),
+
         'isPaid': false,
         'timestamp': FieldValue.serverTimestamp(),
       });
@@ -139,7 +140,7 @@ class CartController extends GetxController {
 
       await cartRef.update({
         'items': items,
-        'totalAmount': "\$${total.toStringAsFixed(2)}",
+        'totalAmount': double.parse(total.toStringAsFixed(2)),
       });
 
       Get.snackbar("Removed", "1 item removed from cart.");
