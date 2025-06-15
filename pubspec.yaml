@@ -48,6 +48,8 @@ dependencies:
   google_fonts: ^6.2.1
   video_player: ^2.9.5
   audioplayers: ^6.4.0
+  barcode_widget: ^2.0.4
+  mailer: ^6.4.1
 
 
 

@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:onlinegroceries/view/login/splash_view.dart';
 import 'package:onlinegroceries/view/main_tabview/main_tab.dart';
 
+import 'controllers/transaction_controller.dart';
 import 'firebase_options.dart';
 import 'controllers/auth_controller.dart';
 import 'view/login/login_view.dart';
@@ -22,15 +23,30 @@ void main() async {
 
   // Register AuthController
   Get.put(AuthController());
+  Get.put(TransactionController());
+
 
   // ✅ Check if user is already logged in and update Firestore
   final currentUser = FirebaseAuth.instance.currentUser;
   if (currentUser != null) {
-    await FirebaseFirestore.instance.collection('Users').doc(currentUser.uid).update({
-      'accountStatus': 'Active',
-      'lastLoginAt': FieldValue.serverTimestamp(),
-    });
+    final userDocRef = FirebaseFirestore.instance.collection('Users').doc(currentUser.uid);
+    final docSnapshot = await userDocRef.get();
+
+    if (docSnapshot.exists) {
+      await userDocRef.update({
+        'accountStatus': 'Active',
+        'lastLoginAt': FieldValue.serverTimestamp(),
+      });
+    } else {
+      await userDocRef.set({
+        'email': currentUser.email,
+        'accountStatus': 'Active',
+        'createdAt': FieldValue.serverTimestamp(),
+        'lastLoginAt': FieldValue.serverTimestamp(),
+      });
+    }
   }
+
 
   runApp(const MyApp());
 }

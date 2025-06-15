@@ -8,11 +8,16 @@ class TransactionController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<void> completeTransaction() async {
+  Future<String?> completeTransaction({
+    required double finalTotal,
+    required double originalTotal,
+    required String paymentMethodSummary,
+    required String discountLabel,
+  }) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) {
       Get.snackbar("Error", "User not logged in.");
-      return;
+      return null;
     }
 
     try {
@@ -21,28 +26,70 @@ class TransactionController extends GetxController {
 
       if (!cartDoc.exists || cartDoc.data()?['isPaid'] == true) {
         Get.snackbar("Error", "No active cart to checkout.");
-        return;
+        return null;
       }
 
       final cartData = cartDoc.data()!;
+      final timestamp = Timestamp.now();
+      final List<dynamic> rawItems = cartData['items'];
+
+      final List<Map<String, dynamic>> enrichedItems = [];
+
+      for (final item in rawItems) {
+        final productId = item['productID'];
+        final productSnapshot = await _firestore.collection('Products').doc(productId).get();
+        final productData = productSnapshot.data();
+
+        enrichedItems.add({
+          'productID': productId,
+          'productName': item['productName'],
+          'quantity': item['quantity'],
+          'unitPrice': item['unitPrice'],
+          'discount': item['discount'],
+          'itemFinalPrice': item['itemFinalPrice'],
+          'unitType': item['unitType'],
+          'unitValue': item['unitValue'],
+          'imageURL': item['imageURL'],
+          'RFIDCode': item['RFIDCode'],
+          'category': productData?['category'] ?? 'Unknown',
+        });
+      }
+
       final transactionData = {
         'userID': userId,
         'userName': cartData['userName'],
-        'items': cartData['items'],
-        'totalAmount': cartData['totalAmount'],
-        'paymentMethod': 'Card',  // you can dynamically set this later
-        'timestamp': FieldValue.serverTimestamp(),
+        'items': enrichedItems,
+        'originalAmount': originalTotal,
+        'totalAmount': finalTotal,
+        'discountLabel': discountLabel,
+        'paymentMethod': paymentMethodSummary,
+        'timestamp': timestamp,
       };
 
-      // Save to Transactions collection
-      await _firestore.collection('Transactions').add(transactionData);
+      final txnRef = await _firestore.collection('Transactions').add(transactionData);
 
-      // Update Cart to mark it as paid
+      await _firestore.collection('Users').doc(userId).update({
+        'purchaseHistory.orders': FieldValue.arrayUnion([
+          {
+            'txnID': txnRef.id,
+            'total': finalTotal,
+            'itemCount': rawItems.length,
+            'timestamp': timestamp,
+            'status': 'Completed'
+          }
+        ])
+      });
+
       await cartRef.update({'isPaid': true});
+      await cartRef.delete();
 
-      Get.snackbar("Success", "Transaction completed successfully!");
+      Get.snackbar("Success", "Transaction completed and saved!");
+      return txnRef.id;
     } catch (e) {
       Get.snackbar("Transaction Error", e.toString());
+      return null;
     }
+
   }
+
 }

@@ -64,17 +64,25 @@ class CartController extends GetxController {
 
       double total = _calculateTotal(items);
 
-      await cartRef.set({
-        'cartID': userId,
-        'userID': userId,
-        'userName': userName,
-        'cartStatus': 'active',
-        'items': items,
-        'totalAmount': double.parse(total.toStringAsFixed(2)),
+      if (cartDoc.exists) {
+        await cartRef.update({
+          'items': items,
+          'totalAmount': double.parse(total.toStringAsFixed(2)),
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      } else {
+        await cartRef.set({
+          'cartID': userId,
+          'userID': userId,
+          'userName': userName,
+          'cartStatus': 'active',
+          'items': items,
+          'totalAmount': double.parse(total.toStringAsFixed(2)),
+          'isPaid': false,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
 
-        'isPaid': false,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
 
       Get.snackbar("Scanned!", "Product added to cart successfully.");
     } catch (e) {
