@@ -2,9 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:onlinegroceries/view/home/tag_based_product_view.dart';
 import '../../common/color_extension.dart';
 import '../../common_widget/category_cell.dart';
 import '../../common_widget/product_cell.dart';
+import '../Notifications/notifications_view.dart';
 import '../explore/explore_screen.dart';
 import '../home/product_details_screen.dart';
 
@@ -18,12 +20,21 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   final TextEditingController txtSearch = TextEditingController();
   int _currentBannerIndex = 0;
+  String searchQuery = "";
 
   List<String> bannerList = [
     "assets/img/1.png",
     "assets/img/2.png",
     "assets/img/3.png",
+    "assets/img/4.png",
+    "assets/img/5.png",
+    "assets/img/6.png",
+    "assets/img/7.png",
+    "assets/img/8.png",
+    "assets/img/9.png",
+    "assets/img/10.png",
   ];
+
   final List<Map<String, dynamic>> categoryList = [
     {
       "name": "Fruits & Vegetables",
@@ -42,25 +53,30 @@ class _HomeViewState extends State<HomeView> {
     },
   ];
 
-  Stream<QuerySnapshot> _fetchProducts(String field) {
+  Stream<QuerySnapshot> _fetchProducts(String field, {int limit = 4}) {
     return FirebaseFirestore.instance
         .collection('Products')
         .where(field, isEqualTo: true)
+        .limit(limit)
         .snapshots();
   }
 
-  Stream<QuerySnapshot> _fetchNewArrivals() {
+  Stream<QuerySnapshot> _fetchNewArrivals({int limit = 4}) {
     return FirebaseFirestore.instance
         .collection('Products')
         .where('isNewArrival', isEqualTo: true)
-        .where('createdAt', isGreaterThan: Timestamp.fromMillisecondsSinceEpoch(0))
         .orderBy('createdAt', descending: true)
-        .limit(10)
+        .limit(limit)
         .snapshots();
   }
 
-
-
+  Stream<QuerySnapshot> _searchProducts(String name) {
+    return FirebaseFirestore.instance
+        .collection('Products')
+        .where('productName', isGreaterThanOrEqualTo: name)
+        .where('productName', isLessThan: name + 'z')
+        .snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +94,17 @@ class _HomeViewState extends State<HomeView> {
               _buildBanner(),
               const SizedBox(height: 3),
               _buildBannerIndicator(),
-              _buildStreamSection("Exclusive Offers", _fetchProducts("isExclusive")),
-              const SizedBox(height: 8),
-              _buildCategorySection(),
-              const SizedBox(height: 8),
-              _buildStreamSection("Popular Picks", _fetchProducts("isPopular")),
-              const SizedBox(height: 8),
-              _buildStreamSection("New Arrivals", _fetchNewArrivals()),
+              if (searchQuery.isNotEmpty) ...[
+                _buildGridSection("Search Results", _searchProducts(searchQuery)),
+              ] else ...[
+                _buildStreamSection("Exclusive Offers", _fetchProducts("isExclusive", limit: 4), field: "isExclusive"),
+                const SizedBox(height: 8),
+                _buildCategorySection(),
+                const SizedBox(height: 8),
+                _buildStreamSection("Popular Picks", _fetchProducts("isPopular", limit: 4), field: "isPopular"),
+                const SizedBox(height: 8),
+                _buildGridSection("New Arrivals", _fetchNewArrivals(limit: 4), field: "isNewArrival"),
+              ],
             ],
           ),
         ),
@@ -111,7 +131,25 @@ class _HomeViewState extends State<HomeView> {
               ),
             ],
           ),
-          const Icon(Icons.notifications_active_sharp, color: Color(0xFF000000)),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsView()),
+              );
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_none, color: Colors.black, size: 28),
+                const Positioned(
+                  right: -2,
+                  top: -2,
+                  child: _UnreadBadge(),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -137,6 +175,11 @@ class _HomeViewState extends State<HomeView> {
             Expanded(
               child: TextField(
                 controller: txtSearch,
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value.trim();
+                  });
+                },
                 decoration: const InputDecoration(
                   hintText: "Search anything you want",
                   border: InputBorder.none,
@@ -183,6 +226,7 @@ class _HomeViewState extends State<HomeView> {
       }).toList(),
     );
   }
+
   Widget _buildCategorySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,7 +250,7 @@ class _HomeViewState extends State<HomeView> {
           ),
         ),
         SizedBox(
-          height: 110, // previously 140
+          height: 110,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: categoryList.length,
@@ -222,17 +266,36 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-
-  Widget _buildStreamSection(String title, Stream<QuerySnapshot> stream) {
+  Widget _buildStreamSection(String title, Stream<QuerySnapshot> stream, {String? field}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          child: Row(
+            children: [
+              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Spacer(),
+              if (field != null)
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TagBasedProductView(
+                          title: title,
+                          field: field,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text("See All", style: TextStyle(color: Colors.black)),
+                ),
+            ],
+          ),
         ),
         SizedBox(
-          height: 250,
+          height: 270,
           child: StreamBuilder<QuerySnapshot>(
             stream: stream,
             builder: (context, snapshot) {
@@ -254,7 +317,6 @@ class _HomeViewState extends State<HomeView> {
                           .snapshots(),
                       builder: (context, favSnapshot) {
                         final isFavorited = favSnapshot.data?.exists ?? false;
-
                         return ProductCell(
                           pObj: data,
                           onPressed: () => Navigator.push(
@@ -270,7 +332,6 @@ class _HomeViewState extends State<HomeView> {
                                 .doc(uid)
                                 .collection('Favorites')
                                 .doc(data['productID']);
-
                             if (isFavorited) {
                               await favRef.delete();
                             } else {
@@ -280,7 +341,9 @@ class _HomeViewState extends State<HomeView> {
                                 'imageURL': data['imageURL'],
                                 'price': (data['price'] ?? 0).toDouble(),
                                 'discount': (data['discount'] ?? 0).toDouble(),
-                                'finalPrice': ((data['price'] ?? 0) * (1 - (data['discount'] ?? 0) / 100)).toDouble(),
+                                'finalPrice': ((data['price'] ?? 0) *
+                                    (1 - (data['discount'] ?? 0) / 100))
+                                    .toDouble(),
                                 'category': data['category'],
                                 'favoritedAt': Timestamp.now(),
                                 'userName': FirebaseAuth.instance.currentUser?.displayName ?? "Unknown",
@@ -291,7 +354,6 @@ class _HomeViewState extends State<HomeView> {
                       },
                     ),
                   );
-
                 },
               );
             },
@@ -300,4 +362,151 @@ class _HomeViewState extends State<HomeView> {
       ],
     );
   }
+
+  Widget _buildGridSection(String title, Stream<QuerySnapshot> stream, {String? field}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Spacer(),
+              if (field != null)
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => TagBasedProductView(title: title, field: field)),
+                    );
+                  },
+                  child: const Text("See All", style: TextStyle(color: Colors.black)),
+                ),
+            ],
+          ),
+        ),
+        StreamBuilder<QuerySnapshot>(
+          stream: stream,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+            final docs = snapshot.data!.docs;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.builder(
+                itemCount: docs.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.65,
+                ),
+                itemBuilder: (context, index) {
+                  final data = docs[index].data() as Map<String, dynamic>;
+                  return StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('Users')
+                        .doc(FirebaseAuth.instance.currentUser!.uid)
+                        .collection('Favorites')
+                        .doc(data['productID'])
+                        .snapshots(),
+                    builder: (context, favSnapshot) {
+                      final isFavorited = favSnapshot.data?.exists ?? false;
+                      return ProductCell(
+                        pObj: data,
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => ProductDetails(product: data)),
+                        ),
+                        isFavorite: isFavorited,
+                        onCart: () {},
+                        onFavoriteToggle: () async {
+                          final uid = FirebaseAuth.instance.currentUser!.uid;
+                          final favRef = FirebaseFirestore.instance
+                              .collection('Users')
+                              .doc(uid)
+                              .collection('Favorites')
+                              .doc(data['productID']);
+                          if (isFavorited) {
+                            await favRef.delete();
+                          } else {
+                            await favRef.set({
+                              'productID': data['productID'],
+                              'productName': data['productName'],
+                              'imageURL': data['imageURL'],
+                              'price': (data['price'] ?? 0).toDouble(),
+                              'discount': (data['discount'] ?? 0).toDouble(),
+                              'finalPrice': ((data['price'] ?? 0) *
+                                  (1 - (data['discount'] ?? 0) / 100))
+                                  .toDouble(),
+                              'category': data['category'],
+                              'favoritedAt': Timestamp.now(),
+                              'userName': FirebaseAuth.instance.currentUser?.displayName ?? "Unknown",
+                            });
+                          }
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
 }
+
+class _UnreadBadge extends StatelessWidget {
+  const _UnreadBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const SizedBox.shrink();
+
+    final q = FirebaseFirestore.instance
+        .collection('Notifications')
+        .where('targets', arrayContainsAny: [user.uid, 'ALL']);
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: q.snapshots(),
+      builder: (context, snap) {
+        if (snap.hasError) {
+          return const SizedBox.shrink();
+        }
+        if (!snap.hasData) return const SizedBox.shrink();
+
+        int unread = 0;
+        for (final d in snap.data!.docs) {
+          final data = d.data();
+          final readBy = List<String>.from(data['readBy'] ?? const []);
+          final archivedBy = List<String>.from(data['archivedBy'] ?? const []);
+          if (!readBy.contains(user.uid) && !archivedBy.contains(user.uid)) {
+            unread++;
+          }
+        }
+        if (unread == 0) return const SizedBox.shrink();
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: Colors.black.withOpacity(0.7), width: 1.5),
+          ),
+          constraints: const BoxConstraints(minWidth: 16, minHeight: 14),
+          child: Text(
+            unread > 99 ? '99+' : '$unread',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+          ),
+        );
+      },
+    );
+  }
+}
+

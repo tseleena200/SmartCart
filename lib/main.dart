@@ -21,7 +21,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Register AuthController
+
   Get.put(AuthController());
   Get.put(TransactionController());
 

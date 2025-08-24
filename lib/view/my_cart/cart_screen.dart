@@ -23,256 +23,170 @@ class _MyCartViewState extends State<MyCartView> {
     final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F7F8),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
+        elevation: 0,
         centerTitle: true,
+        backgroundColor: Colors.white,
         title: Text(
-          "My Cart",
+          "M Y  C A R T ",
           style: TextStyle(
             color: TColor.primaryText,
             fontSize: 20,
             fontWeight: FontWeight.w700,
+            letterSpacing: .2,
           ),
         ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+        ),
       ),
-      backgroundColor: Colors.white,
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
           StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance.collection('Carts').doc(userId).snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection('Carts')
+                .doc(userId)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
 
               if (!snapshot.hasData || !snapshot.data!.exists) {
-                return const Center(child: Text("Your cart is empty."));
+                return const _EmptyCart();
               }
 
-              final cartData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+              final cartData =
+                  snapshot.data!.data() as Map<String, dynamic>? ?? {};
               final List<dynamic> items = cartData['items'] ?? [];
 
               if (items.isEmpty) {
-                return const Center(child: Text("Your cart is empty."));
+                return const _EmptyCart();
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 140),
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
                   final String name = item['productName'] ?? 'Unnamed';
-                  final String imageUrl = _convertDriveUrl(item['imageURL'] ?? '');
+                  final String imageUrl =
+                  _convertDriveUrl(item['imageURL'] ?? '');
                   final String rfid = item['RFIDCode'] ?? '';
-                  final int quantity = item['quantity'] ?? 1;
-                  final double finalPrice = (item['itemFinalPrice'] ?? 0).toDouble();
-                  final double unitPrice = (item['unitPrice'] ?? 0).toDouble();
-                  final double discount = (item['discount'] ?? 0).toDouble();
-                  final String unitLabel = (item['unitValue'] != null && item['unitType'] != null)
+                  final int quantity = (item['quantity'] ?? 1).clamp(1, 999);
+                  final double finalPrice =
+                  (item['itemFinalPrice'] ?? 0).toDouble();
+                  final double unitPrice =
+                  (item['unitPrice'] ?? 0).toDouble();
+                  final double discount =
+                  (item['discount'] ?? 0).toDouble().clamp(0, 100);
+                  final String unitLabel =
+                  (item['unitValue'] != null && item['unitType'] != null)
                       ? '${item['unitValue']} ${item['unitType']}'
                       : '';
 
                   return Dismissible(
                     key: ValueKey(rfid),
                     direction: DismissDirection.endToStart,
-                    background: Container(
-                      color: Colors.redAccent,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
+                    background: _SwipeDeleteBackground(),
                     onDismissed: (_) async {
                       for (int i = 0; i < quantity; i++) {
                         await cartController.removeProductFromCartByRFID(rfid);
                       }
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('$name removed'),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () {
-                              for (int i = 0; i < quantity; i++) {
-                                cartController.addProductToCartByRFID(rfid);
-                              }
-                            },
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            content: Text('$name removed'),
+                            action: SnackBarAction(
+                              label: 'Undo',
+                              onPressed: () {
+                                for (int i = 0; i < quantity; i++) {
+                                  cartController.addProductToCartByRFID(rfid);
+                                }
+                              },
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
                     },
                     child: GestureDetector(
-                      onLongPress: () => _showRemoveOptions(context, rfid, name, quantity),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 14),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEAD2DC),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Stack(
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 70,
-                                  height: 70,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      imageUrl,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                      onLongPress: () =>
+                          _showRemoveOptions(context, rfid, name, quantity),
+                      child: _CartItemCard(
+                        name: name,
+                        unitLabel: unitLabel,
+                        imageUrl: imageUrl,
+                        quantity: quantity,
+                        finalPrice: finalPrice,
+                        unitPrice: unitPrice * quantity,
+                        discount: discount,
+                        actions: PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
+                          onSelected: (value) async {
+                            if (value == 'remove1') {
+                              await Get.dialog(
+                                RFIDRemovalOverlay(
+                                  rfidCode: rfid,
+                                  cartController: cartController,
+                                ),
+                                barrierDismissible: false,
+                              );
+                            } else if (value == 'removeAll') {
+                              for (int i = 0; i < quantity; i++) {
+                                await cartController
+                                    .removeProductFromCartByRFID(rfid);
+                              }
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    behavior: SnackBarBehavior.floating,
+                                    content: Text('$name removed'),
+                                    action: SnackBarAction(
+                                      label: 'Undo',
+                                      onPressed: () {
+                                        for (int i = 0; i < quantity; i++) {
+                                          cartController
+                                              .addProductToCartByRFID(rfid);
+                                        }
+                                      },
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        name,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w600, fontSize: 14),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        unitLabel,
-                                        style: const TextStyle(fontSize: 11, color: Colors.black54),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Row(
-                                        children: [
-                                          if (discount > 0)
-                                            Text(
-                                              "\$${(unitPrice * quantity).toStringAsFixed(2)}",
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey,
-                                                decoration: TextDecoration.lineThrough,
-                                              ),
-                                            ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            "\$${finalPrice.toStringAsFixed(2)}",
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                          if (discount > 0)
-                                            Container(
-                                              margin: const EdgeInsets.only(left: 6),
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: Colors.green,
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                "${discount.toInt()}% OFF",
-                                                style: const TextStyle(fontSize: 10, color: Colors.white),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          _quantityButton(
-                                            icon: Icons.remove,
-                                            onPressed: quantity > 1
-                                                ? () async {
-                                              await Get.dialog(
-                                                RFIDRemovalOverlay(
-                                                  rfidCode: rfid,
-                                                  cartController: cartController,
-                                                ),
-                                                barrierDismissible: false,
-                                              );
-                                            }
-                                                : null,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                                            child: Text(
-                                              quantity.toString(),
-                                              style: const TextStyle(fontSize: 14),
-                                            ),
-                                          ),
-                                          _quantityButton(
-                                            icon: Icons.add,
-                                            onPressed: () async {
-                                              await Get.dialog(
-                                                RFIDScanOverlay(rfidCode: rfid),
-                                                barrierDismissible: false,
-                                              );
-                                              await cartController.addProductToCartByRFID(rfid);
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                                );
+                              }
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: 'remove1',
+                              child: Text('Remove 1'),
                             ),
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              child: PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert),
-                                onSelected: (value) async {
-                                  if (value == 'remove1') {
-                                    await Get.dialog(
-                                      RFIDRemovalOverlay(
-                                        rfidCode: rfid,
-                                        cartController: cartController,
-                                      ),
-                                      barrierDismissible: false,
-                                    );
-                                  } else if (value == 'removeAll') {
-                                    for (int i = 0; i < quantity; i++) {
-                                      await cartController.removeProductFromCartByRFID(rfid);
-                                    }
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('$name removed'),
-                                        action: SnackBarAction(
-                                          label: 'Undo',
-                                          onPressed: () {
-                                            for (int i = 0; i < quantity; i++) {
-                                              cartController.addProductToCartByRFID(rfid);
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'remove1',
-                                    child: Text('Remove 1'),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'removeAll',
-                                    child: Text('Remove All'),
-                                  ),
-                                ],
-                              ),
+                            PopupMenuItem(
+                              value: 'removeAll',
+                              child: Text('Remove All'),
                             ),
-
                           ],
                         ),
+                        onDecrease: quantity > 1
+                            ? () async {
+                          await Get.dialog(
+                            RFIDRemovalOverlay(
+                              rfidCode: rfid,
+                              cartController: cartController,
+                            ),
+                            barrierDismissible: false,
+                          );
+                        }
+                            : null,
+                        onIncrease: () async {
+                          await Get.dialog(
+                            RFIDScanOverlay(rfidCode: rfid),
+                            barrierDismissible: false,
+                          );
+                          await cartController.addProductToCartByRFID(rfid);
+                        },
                       ),
                     ),
                   );
@@ -280,10 +194,12 @@ class _MyCartViewState extends State<MyCartView> {
               );
             },
           ),
+
+          // Bottom checkout bar
           Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
+            bottom: 12,
+            left: 16,
+            right: 16,
             child: StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('Carts')
@@ -292,48 +208,15 @@ class _MyCartViewState extends State<MyCartView> {
               builder: (context, snapshot) {
                 String total = "\$0.00";
                 if (snapshot.hasData && snapshot.data!.exists) {
-                  final data = snapshot.data!.data() as Map<String, dynamic>;
-                  double amount = (data['totalAmount'] ?? 0).toDouble();
+                  final data =
+                      snapshot.data!.data() as Map<String, dynamic>? ?? {};
+                  final amount = (data['totalAmount'] ?? 0).toDouble();
                   total = "\$${amount.toStringAsFixed(2)}";
-
                 }
-                return MaterialButton(
+
+                return _CheckoutBar(
+                  total: total,
                   onPressed: showCheckout,
-                  height: 60,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
-                  minWidth: double.infinity,
-                  elevation: 0.1,
-                  color: TColor.primary,
-                  child: Stack(
-                    alignment: Alignment.centerRight,
-                    children: [
-                      const Center(
-                        child: Text(
-                          "Go To Checkout",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black12,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                        child: Text(
-                          total,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 );
               },
             ),
@@ -343,22 +226,26 @@ class _MyCartViewState extends State<MyCartView> {
     );
   }
 
-  void _showRemoveOptions(BuildContext context, String rfid, String name, int quantity) {
+  void _showRemoveOptions(
+      BuildContext context, String rfid, String name, int quantity) {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
+      showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   "Modify '$name'",
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
                 ListTile(
@@ -376,26 +263,30 @@ class _MyCartViewState extends State<MyCartView> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.delete_forever, color: Colors.red),
+                  leading:
+                  const Icon(Icons.delete_forever, color: Colors.redAccent),
                   title: const Text("Remove All"),
                   onTap: () async {
                     Navigator.pop(context);
                     for (int i = 0; i < quantity; i++) {
                       await cartController.removeProductFromCartByRFID(rfid);
                     }
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('$name removed'),
-                        action: SnackBarAction(
-                          label: 'Undo',
-                          onPressed: () {
-                            for (int i = 0; i < quantity; i++) {
-                              cartController.addProductToCartByRFID(rfid);
-                            }
-                          },
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          content: Text('$name removed'),
+                          action: SnackBarAction(
+                            label: 'Undo',
+                            onPressed: () {
+                              for (int i = 0; i < quantity; i++) {
+                                cartController.addProductToCartByRFID(rfid);
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                 ),
                 ListTile(
@@ -408,22 +299,6 @@ class _MyCartViewState extends State<MyCartView> {
           ),
         );
       },
-    );
-  }
-
-  Widget _quantityButton({required IconData icon, VoidCallback? onPressed}) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: onPressed != null ? TColor.primary : Colors.grey.shade300,
-        minimumSize: const Size(32, 32),
-        padding: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        elevation: 2,
-      ),
-      child: Icon(icon, size: 18, color: Colors.white),
     );
   }
 
@@ -441,6 +316,402 @@ class _MyCartViewState extends State<MyCartView> {
     final regExp = RegExp(r'd/([a-zA-Z0-9_-]+)');
     final match = regExp.firstMatch(url);
     final fileId = match != null ? match.group(1) : null;
-    return fileId != null ? 'https://drive.google.com/uc?export=view&id=$fileId' : url;
+    return fileId != null
+        ? 'https://drive.google.com/uc?export=view&id=$fileId'
+        : url;
+  }
+}
+
+/* ---------- UI Pieces (purely visual, no logic changes) ---------- */
+
+class _SwipeDeleteBackground extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.redAccent,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Icon(Icons.delete_sweep, color: Colors.white),
+          SizedBox(width: 6),
+          Text("Remove", style: TextStyle(color: Colors.white)),
+        ],
+      ),
+    );
+  }
+}
+
+class _CartItemCard extends StatelessWidget {
+  const _CartItemCard({
+    required this.name,
+    required this.unitLabel,
+    required this.imageUrl,
+    required this.quantity,
+    required this.finalPrice,
+    required this.unitPrice,
+    required this.discount,
+    required this.onIncrease,
+    required this.onDecrease,
+    required this.actions,
+  });
+
+  final String name;
+  final String unitLabel;
+  final String imageUrl;
+  final int quantity;
+  final double finalPrice;
+  final double unitPrice; // original * qty (for strike-through if discount)
+  final double discount;
+  final VoidCallback? onIncrease;
+  final VoidCallback? onDecrease;
+  final Widget actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade500), // added
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: Offset(0, 4),
+            color: Color(0x1A000000),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ProductImage(url: imageUrl),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      if (unitLabel.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF2F2F4),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            unitLabel,
+                            style: const TextStyle(
+                                fontSize: 11, color: Colors.black54),
+                          ),
+                        ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          if (discount > 0)
+                            Text(
+                              "\$${unitPrice.toStringAsFixed(2)}",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          if (discount > 0) const SizedBox(width: 6),
+                          Text(
+                            "\$${finalPrice.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (discount > 0) const SizedBox(width: 8),
+                          if (discount > 0)
+                            _DiscountChip(label: "${discount.toInt()}% OFF"),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _QuantityStepper(
+                        quantity: quantity,
+                        onDecrease: onDecrease,
+                        onIncrease: onIncrease,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Positioned(top: 0, right: 0, child: actions),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductImage extends StatelessWidget {
+  const _ProductImage({required this.url});
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 78,
+      height: 78,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFFF6F6F8),
+        border: Border.all(color: const Color(0xFFE8E8ED)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Image.network(
+          url,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) =>
+          const Icon(Icons.broken_image_outlined, size: 28, color: Colors.grey),
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+            return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _DiscountChip extends StatelessWidget {
+  const _DiscountChip({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.green,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          letterSpacing: .2,
+        ),
+      ),
+    );
+  }
+}
+
+class _QuantityStepper extends StatelessWidget {
+  const _QuantityStepper({
+    required this.quantity,
+    required this.onDecrease,
+    required this.onIncrease,
+  });
+
+  final int quantity;
+  final VoidCallback? onDecrease;
+  final VoidCallback? onIncrease;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F7F9),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFE8E8ED)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _RoundIconBtn(
+            icon: Icons.remove_rounded,
+            onTap: onDecrease,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              child: Text(
+                '$quantity',
+                key: ValueKey(quantity),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: .2,
+                ),
+              ),
+            ),
+          ),
+          _RoundIconBtn(
+            icon: Icons.add_rounded,
+            onTap: onIncrease,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoundIconBtn extends StatelessWidget {
+  const _RoundIconBtn({required this.icon, required this.onTap});
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool enabled = onTap != null;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        width: 28,
+        height: 28,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: enabled ? TColor.primary : Colors.grey.shade300,
+          shape: BoxShape.circle,
+          boxShadow: enabled
+              ? const [
+            BoxShadow(
+              blurRadius: 6,
+              offset: Offset(0, 3),
+              color: Color(0x22000000),
+            )
+          ]
+              : null,
+        ),
+        child: Icon(icon, size: 18, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class _CheckoutBar extends StatelessWidget {
+  const _CheckoutBar({required this.total, required this.onPressed});
+
+  final String total;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return PhysicalModel(
+      color: Colors.transparent,
+      elevation: 8,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 66,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              TColor.primary.withOpacity(.95),
+              TColor.primary.withOpacity(.85),
+            ],
+          ),
+        ),
+        child: Stack(
+          alignment: Alignment.centerRight,
+          children: [
+            Center(
+              child: Text(
+                "Go To Checkout",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+              child: Text(
+                total,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: onPressed,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyCart extends StatelessWidget {
+  const _EmptyCart();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.shopping_bag_outlined, size: 72, color: Colors.black38),
+            const SizedBox(height: 12),
+            const Text(
+              "Your cart is empty",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              "Browse products and add them to your cart.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

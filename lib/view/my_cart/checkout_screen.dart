@@ -32,9 +32,10 @@ class _CheckoutViewState extends State<CheckoutView> {
   final List<Map<String, dynamic>> discountOptions = [
     {'label': 'None', 'type': 'none', 'value': 0.0},
     {'label': 'First 3 Orders - 15% OFF', 'type': 'percent', 'value': 0.15},
-    {'label': 'HBC Bank Card - 10% OFF', 'type': 'percent', 'value': 0.10},
+    {'label': 'Welcome Offer - 10% OFF', 'type': 'percent', 'value': 0.10},
     {'label': 'Seasonal \$5 OFF', 'type': 'flat', 'value': 5.0},
   ];
+
 
   @override
   void initState() {
@@ -58,20 +59,64 @@ class _CheckoutViewState extends State<CheckoutView> {
     }
   }
 
-  void _applyDiscount() {
+  void _applyDiscount() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+
     double discountedTotal = originalCost;
-    if (selectedDiscountLabel != 'None') {
-      final option = discountOptions.firstWhere((d) => d['label'] == selectedDiscountLabel);
-      if (option['type'] == 'percent') {
-        discountedTotal = originalCost - (originalCost * option['value']);
-      } else if (option['type'] == 'flat') {
-        discountedTotal = originalCost - option['value'];
+
+    try {
+      final txnSnapshot = await _firestore
+          .collection('Transactions')
+          .where('userID', isEqualTo: userId)
+          .get();
+      final txnCount = txnSnapshot.docs.length;
+
+      // Check if "Seasonal $5 OFF" was already used
+      final seasonalUsed = txnSnapshot.docs.any(
+            (doc) => doc['discountLabel'] == 'Seasonal \$5 OFF',
+      );
+
+      final option = discountOptions.firstWhere(
+            (d) => d['label'] == selectedDiscountLabel,
+        orElse: () => {'type': 'none', 'value': 0.0},
+      );
+
+      if (option['label'] == 'First 3 Orders - 15% OFF') {
+        if (txnCount < 3) {
+          discountedTotal = originalCost - (originalCost * option['value']);
+        } else {
+          Get.snackbar("Offer Expired", "You’ve already used the 3-order offer.");
+          setState(() {
+            selectedDiscountLabel = 'None';
+          });
+        }
+      } else if (option['label'] == 'Seasonal \$5 OFF') {
+        if (!seasonalUsed) {
+          discountedTotal = originalCost - option['value'];
+        } else {
+          Get.snackbar("Offer Used", "You’ve already used this seasonal offer.");
+          setState(() {
+            selectedDiscountLabel = 'None';
+          });
+        }
+      } else {
+        // Apply any other valid discounts
+        if (option['type'] == 'percent') {
+          discountedTotal = originalCost - (originalCost * option['value']);
+        } else if (option['type'] == 'flat') {
+          discountedTotal = originalCost - option['value'];
+        }
       }
+
+      setState(() {
+        totalCost = discountedTotal.clamp(0, originalCost);
+      });
+    } catch (e) {
+      Get.snackbar("Error", "Failed to apply discount: $e");
     }
-    setState(() {
-      totalCost = discountedTotal.clamp(0, originalCost);
-    });
   }
+
 
   Future<void> submitOrder() async {
     final userId = _auth.currentUser?.uid;
@@ -79,6 +124,27 @@ class _CheckoutViewState extends State<CheckoutView> {
       Get.snackbar("Error", "User not logged in.");
       return;
     }
+    final txnSnapshot = await _firestore
+        .collection('Transactions')
+        .where('userID', isEqualTo: userId)
+        .get();
+
+    final txnCount = txnSnapshot.docs.length;
+    final seasonalUsed = txnSnapshot.docs.any(
+          (doc) => doc['discountLabel'] == 'Seasonal \$5 OFF',
+    );
+
+// Double-check rules again
+    if (selectedDiscountLabel == 'First 3 Orders - 15% OFF' && txnCount >= 3) {
+      Get.snackbar("Invalid Discount", "First 3 Orders offer no longer valid.");
+      return;
+    }
+
+    if (selectedDiscountLabel == 'Seasonal \$5 OFF' && seasonalUsed) {
+      Get.snackbar("Invalid Discount", "Seasonal offer already used.");
+      return;
+    }
+
 
     if (paymentMethod == "Select Method") {
       showDialog(
@@ -113,6 +179,7 @@ class _CheckoutViewState extends State<CheckoutView> {
       });
     }
   }
+
 
   void showCartConfirmationModal() async {
     final userId = _auth.currentUser?.uid;

@@ -12,6 +12,8 @@ class ExploreView extends StatefulWidget {
 }
 
 class _ExploreViewState extends State<ExploreView> {
+  final ScrollController _scrollController = ScrollController();
+
   Stream<QuerySnapshot> _getCategories() {
     return FirebaseFirestore.instance
         .collection('Categories')
@@ -27,6 +29,12 @@ class _ExploreViewState extends State<ExploreView> {
     } catch (_) {
       return Colors.grey.shade300;
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -56,87 +64,106 @@ class _ExploreViewState extends State<ExploreView> {
           ),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Promo banner
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF0D0),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    "Get 10% off on Groceries Plus T&C Apply",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      body: SafeArea(
+        child: Scrollbar(
+          controller: _scrollController,
+          radius: const Radius.circular(4),
+          thickness: 4,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Promo banner
+                Padding(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF0D0),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Get 10% off on Groceries Plus T&C Apply",
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          "Spend LKR 5000 Get 5% Discount",
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    "Spend LKR 5000 Get 5% Discount",
-                    style: TextStyle(fontSize: 12),
+                ),
+
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Text(
+                    "All Categories",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                ],
-              ),
-            ),
-          ),
+                ),
 
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Text(
-              "All Categories",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
+                // Category Grid
+                StreamBuilder<QuerySnapshot>(
+                  stream: _getCategories(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _getCategories(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+                    final docs = snapshot.data!.docs;
 
-                final docs = snapshot.data!.docs;
-
-                return GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 1.8,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
-                  ),
-                  itemCount: docs.length,
-                  itemBuilder: (context, index) {
-                    final data = docs[index].data() as Map<String, dynamic>;
-                    return ExploreCell(
-                      pObj: {
-                        "name": data['name'] ?? '',
-                        "sub": data['sub'] ?? '',
-                        "aisle": data['aisle'] ?? '',
-                        "icon": data['imageURL'] ?? '',
-                        "color": _parseHex(data['colorHex']),
-                      },
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ExploreDetailsView(eObj: data),
-                          ),
-                        );
-                      },
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 1.6,
+                          crossAxisSpacing: 14,
+                          mainAxisSpacing: 14,
+                        ),
+                        itemCount: docs.length,
+                        itemBuilder: (context, index) {
+                          final data =
+                          docs[index].data() as Map<String, dynamic>;
+                          return ExploreCell(
+                            pObj: {
+                              "name": data['name'] ?? '',
+                              "sub": data['sub'] ?? '',
+                              "aisle": data['aisle'] ?? '',
+                              "icon": data['imageURL'] ?? '',
+                              "color": _parseHex(data['colorHex']),
+                            },
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ExploreDetailsView(eObj: data),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
                     );
                   },
-                );
-              },
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

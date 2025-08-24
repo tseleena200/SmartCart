@@ -33,12 +33,12 @@ class FavoriteController extends GetxController {
         'productID': productID,
         'productName': productName,
         'imageURL': imageURL,
-        'price': price.toDouble(),         // ✅ ensure type safety
-        'discount': discount.toDouble(),   // ✅ ensure type safety
-        'finalPrice': finalPrice.toDouble(), // ✅ ensure type safety
+        'price': price.toDouble(),
+        'discount': discount.toDouble(),
+        'finalPrice': finalPrice.toDouble(),
         'category': category,
         'favoritedAt': Timestamp.now(),
-        'userName': userName, // Optional but useful
+        'userName': userName,
       });
 
       Get.snackbar("Added", "$productName added to favorites.");

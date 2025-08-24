@@ -9,7 +9,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../controllers/favorite_controller.dart';
 import '../../reviews/all_reviews.dart';
-import '../../reviews/review_sheet.dart';
 import '../rfid/rfid_removal_overlay.dart';
 import '../rfid/rfid_scan_overlay.dart';
 
@@ -396,13 +395,13 @@ class _ProductDetailsState extends State<ProductDetails> {
                           return;
                         }
 
-                        // ✅ Use Get.dialog with barrierDismissible set to false
+
                         await Get.dialog(
                           RFIDScanOverlay(rfidCode: rfidCode),
                           barrierDismissible: false,
                         );
 
-                        // ✅ Then add to cart and update count
+
                         await cartController.addProductToCartByRFID(rfidCode);
                         await _loadScannedCount();
 

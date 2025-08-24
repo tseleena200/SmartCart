@@ -22,7 +22,8 @@ class ExploreCell extends StatelessWidget {
       onTap: onPressed,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        height: 110, // 📦 Bigger height
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(16),
@@ -30,41 +31,52 @@ class ExploreCell extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Left: Text info
+            // 📝 Left: Text
             Expanded(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
+                    maxLines: 1,
+                    softWrap: false,
+                      overflow: TextOverflow.ellipsis
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: const TextStyle(fontSize: 12, color: Colors.black),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Text(
                     aisle,
                     style: const TextStyle(fontSize: 11, color: Colors.black),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
                   ),
                 ],
               ),
             ),
 
-            // Right: Load image from network (Firestore URL)
+            const SizedBox(width: 8),
+
+            // 🖼️ Right: Bigger image
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
                 iconUrl,
-                width: 58,
-                height: 58,
+                width: 64,  // was 58
+                height: 64, // was 58
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) => const Icon(
                   Icons.broken_image,

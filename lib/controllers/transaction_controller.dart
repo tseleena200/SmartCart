@@ -40,10 +40,22 @@ class TransactionController extends GetxController {
         final productSnapshot = await _firestore.collection('Products').doc(productId).get();
         final productData = productSnapshot.data();
 
+        // 🟡 Reduce stock
+        final currentStock = productData?['stockLevel'] ?? 0;
+        final quantityPurchased = item['quantity'];
+
+        final newStock = currentStock - quantityPurchased;
+        if (newStock >= 0) {
+          await _firestore.collection('Products').doc(productId).update({
+            'stockLevel': newStock
+          });
+        }
+
+        // ✅ Enrich item
         enrichedItems.add({
           'productID': productId,
           'productName': item['productName'],
-          'quantity': item['quantity'],
+          'quantity': quantityPurchased,
           'unitPrice': item['unitPrice'],
           'discount': item['discount'],
           'itemFinalPrice': item['itemFinalPrice'],
@@ -54,6 +66,7 @@ class TransactionController extends GetxController {
           'category': productData?['category'] ?? 'Unknown',
         });
       }
+
 
       final transactionData = {
         'userID': userId,
