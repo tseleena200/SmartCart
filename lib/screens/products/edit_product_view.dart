@@ -26,11 +26,11 @@ class _EditProductViewState extends State<EditProductView> {
   String? _selectedUnitType;
   bool _isLoading = false;
 
-  final List<String> _unitTypes = ['pcs', 'pack', 'box', 'set', 'g', 'kg', 'ml', 'L'];
+  final List<String> _unitTypes = ['pcs', 'pack', 'box', 'set', 'g', 'kg', 'ml', 'L','fl oz'];
   final List<String> _statuses = ["Exclusive", "Popular", "New Arrival"];
   final List<String> _categories = [
     "Fruits & Vegetables", "Fishes & Meat", "Dairy", "Bakery", "Canned Goods",
-    "Pasta & Rice", "Herbs & Spices", "Frozen Foods", "Ice Cream & Desserts",
+    "Pantry Supplies", "Herbs & Spices", "Frozen Foods", "Ice Cream & Desserts",
     "Breakfast & Cereals", "Snacks Item", "Beverages", "Wine & Spirits",
     "Baby Products", "Feminine Care", "Personal Care", "Health & Wellness",
     "Cleaning Supplies", "Household Essentials", "Pet Supplies",
@@ -94,6 +94,7 @@ class _EditProductViewState extends State<EditProductView> {
         'isPopular': _status == "Popular",
         'imageURL': imageUrl,
         'updatedAt': FieldValue.serverTimestamp(),
+        'isNewArrival': _status == "New Arrival",
       });
 
       ScaffoldMessenger.of(context).showSnackBar(

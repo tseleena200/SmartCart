@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
-import '../../constants.dart';
+import '../../constants.dart'; // <- uses primaryColor, secondaryColor, etc.
 
 class EditCategoryView extends StatefulWidget {
-  final DocumentSnapshot categoryDoc;
+  final DocumentSnapshot categoryDoc; // must be a real doc
   const EditCategoryView({super.key, required this.categoryDoc});
 
   @override
@@ -13,39 +12,26 @@ class EditCategoryView extends StatefulWidget {
 
 class _EditCategoryViewState extends State<EditCategoryView> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
-  late TextEditingController _subController;
-  late TextEditingController _aisleController;
-  late TextEditingController _colorHexController;
-  late TextEditingController _driveLinkController;
+  late final TextEditingController _nameController;
+  late final TextEditingController _subController;
+  late final TextEditingController _aisleController;
+  late final TextEditingController _colorHexController;
+  late final TextEditingController _driveLinkController;
 
   bool _isLoading = false;
   Color? _previewColor;
 
-  @override
-  void initState() {
-    super.initState();
-    final data = widget.categoryDoc.data() as Map<String, dynamic>;
-    _nameController = TextEditingController(text: data['name'] ?? '');
-    _subController = TextEditingController(text: data['sub'] ?? '');
-    _aisleController = TextEditingController(text: data['aisle'] ?? '');
-    _colorHexController = TextEditingController(text: data['colorHex'] ?? '');
-    _driveLinkController = TextEditingController(text: data['imageURL'] ?? '');
+  // -------- HELPERS --------
+  String? _validateRequired(String? v) =>
+      (v == null || v.trim().isEmpty) ? 'Required' : null;
 
-    // Live preview for color hex
-    _colorHexController.addListener(() {
-      final hex = _colorHexController.text.replaceAll('#', '');
-      if (hex.length == 6 || hex.length == 8) {
-        try {
-          final value = int.parse(hex.length == 6 ? "FF$hex" : hex, radix: 16);
-          setState(() => _previewColor = Color(value));
-        } catch (_) {
-          setState(() => _previewColor = null);
-        }
-      } else {
-        setState(() => _previewColor = null);
-      }
-    });
+  String? _validateHex(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Required';
+    final hexPattern = RegExp(r'^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$');
+    if (!hexPattern.hasMatch(value.trim())) {
+      return 'Invalid hex (use #RRGGBB or #AARRGGBB)';
+    }
+    return null;
   }
 
   String _convertDriveLink(String url) {
@@ -58,11 +44,53 @@ class _EditCategoryViewState extends State<EditCategoryView> {
     return url;
   }
 
+  void _updatePreviewFromHex(String hexText) {
+    final text = hexText.replaceAll('#', '');
+    if (text.length == 6 || text.length == 8) {
+      try {
+        final value = int.parse(text.length == 6 ? "FF$text" : text, radix: 16);
+        setState(() => _previewColor = Color(value));
+      } catch (_) {
+        setState(() => _previewColor = null);
+      }
+    } else {
+      setState(() => _previewColor = null);
+    }
+  }
+
+  // -------- LIFECYCLE --------
+  @override
+  void initState() {
+    super.initState();
+    final data = Map<String, dynamic>.from(
+        (widget.categoryDoc.data() ?? {}) as Map<String, dynamic>);
+
+    _nameController = TextEditingController(text: data['name'] ?? '');
+    _subController = TextEditingController(text: data['sub'] ?? '');
+    _aisleController = TextEditingController(text: data['aisle'] ?? '');
+    _colorHexController = TextEditingController(text: data['colorHex'] ?? '');
+    _driveLinkController = TextEditingController(text: data['imageURL'] ?? '');
+
+    _updatePreviewFromHex(_colorHexController.text);
+    _colorHexController.addListener(() {
+      _updatePreviewFromHex(_colorHexController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _subController.dispose();
+    _aisleController.dispose();
+    _colorHexController.dispose();
+    _driveLinkController.dispose();
+    super.dispose();
+  }
+
+  // -------- ACTIONS --------
   Future<void> _updateCategory() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-
-    final imageURL = _convertDriveLink(_driveLinkController.text.trim());
 
     try {
       await widget.categoryDoc.reference.update({
@@ -70,31 +98,70 @@ class _EditCategoryViewState extends State<EditCategoryView> {
         'sub': _subController.text.trim(),
         'aisle': _aisleController.text.trim(),
         'colorHex': _colorHexController.text.trim(),
-        'imageURL': imageURL,
+        'imageURL': _convertDriveLink(_driveLinkController.text.trim()),
         'updatedAt': Timestamp.now(),
       });
 
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Category updated successfully.')),
-        );
-      }
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Category updated successfully.')),
+      );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update: $e')),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  Future<void> _deleteCategory() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete Category'),
+        content: const Text(
+          'Are you sure you want to delete this category? This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await widget.categoryDoc.reference.delete();
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Category deleted')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete: $e')),
+      );
+    }
+  }
+
+  // -------- UI --------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Category"),
-        backgroundColor: secondaryColor,
+        backgroundColor: secondaryColor, // constant
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -108,7 +175,7 @@ class _EditCategoryViewState extends State<EditCategoryView> {
                   labelText: 'Category Name',
                   filled: true,
                 ),
-                validator: (value) => value!.isEmpty ? 'Required' : null,
+                validator: _validateRequired,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -117,7 +184,7 @@ class _EditCategoryViewState extends State<EditCategoryView> {
                   labelText: 'Subtitle',
                   filled: true,
                 ),
-                validator: (value) => value!.isEmpty ? 'Required' : null,
+                validator: _validateRequired,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -126,11 +193,10 @@ class _EditCategoryViewState extends State<EditCategoryView> {
                   labelText: 'Aisle',
                   filled: true,
                 ),
-                validator: (value) => value!.isEmpty ? 'Required' : null,
+                validator: _validateRequired,
               ),
               const SizedBox(height: 16),
 
-              // Color hex with preview
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -141,13 +207,13 @@ class _EditCategoryViewState extends State<EditCategoryView> {
                         labelText: 'Color Hex (e.g. #FFECE4)',
                         filled: true,
                       ),
-                      validator: (value) => value!.isEmpty ? 'Required' : null,
+                      validator: _validateHex,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
                       color: _previewColor ?? Colors.grey.shade300,
                       border: Border.all(color: Colors.black12),
@@ -164,32 +230,62 @@ class _EditCategoryViewState extends State<EditCategoryView> {
                   labelText: 'Google Drive Image Link',
                   filled: true,
                 ),
-                validator: (value) => value!.isEmpty ? 'Required' : null,
+                validator: _validateRequired,
               ),
 
               const SizedBox(height: 24),
 
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : Center(
-                child: SizedBox(
-                  width: 200,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _updateCategory,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB79BFF),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else
+                Column(
+                  children: [
+                    // Update button -> primaryColor
+                    SizedBox(
+                      width: 220,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _updateCategory,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Update Category',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'Update Category',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                    const SizedBox(height: 12),
+
+                    // Delete button -> secondaryColor (theme)
+                    SizedBox(
+                      width: 220,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _deleteCategory,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: secondaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Delete Category',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ),
             ],
           ),
         ),

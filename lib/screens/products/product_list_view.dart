@@ -14,6 +14,33 @@ class ProductListView extends StatefulWidget {
 class _ProductListViewState extends State<ProductListView> {
   final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
+  String _selectedCategory = 'All';
+
+  final List<String> _categories = [
+    'All',
+    'Fruits & Vegetables',
+    'Fishes & Meat',
+    'Dairy',
+    'Bakery',
+    'Canned Goods',
+    'Pantry Supplies',
+    'Herbs & Spices',
+    'Frozen Foods',
+    'Ice Cream & Desserts',
+    'Breakfast & Cereals',
+    'Snacks Item',
+    'Beverages',
+    'Wine & Spirits',
+    'Baby Products',
+    'Feminine Care',
+    'Personal Care',
+    'Health & Wellness',
+    'Cleaning Supplies',
+    'Household Essentials',
+    'Pet Supplies',
+    'Stationery & Office',
+    'Offers',
+  ];
 
   @override
   void initState() {
@@ -49,6 +76,7 @@ class _ProductListViewState extends State<ProductListView> {
           padding: const EdgeInsets.all(defaultPadding),
           child: Column(
             children: [
+              // Search Field
               TextField(
                 controller: _searchController,
                 style: const TextStyle(color: Colors.white),
@@ -64,7 +92,38 @@ class _ProductListViewState extends State<ProductListView> {
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+
+              // Category Dropdown
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: secondaryColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: DropdownButton<String>(
+                  value: _selectedCategory,
+                  dropdownColor: secondaryColor,
+                  iconEnabledColor: Colors.white,
+                  underline: const SizedBox(),
+                  isExpanded: true,
+                  style: const TextStyle(color: Colors.white),
+                  items: _categories.map((category) {
+                    return DropdownMenuItem<String>(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value!;
+                    });
+                  },
+                ),
+              ),
               const SizedBox(height: 16),
+
+              // Product List
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('Products').snapshots(),
@@ -83,7 +142,10 @@ class _ProductListViewState extends State<ProductListView> {
                     final filteredProducts = allProducts.where((doc) {
                       final data = doc.data() as Map<String, dynamic>;
                       final name = (data['productName'] ?? '').toString().toLowerCase();
-                      return name.contains(_searchText);
+                      final category = (data['category'] ?? '').toString();
+                      final matchesSearch = name.contains(_searchText);
+                      final matchesCategory = _selectedCategory == 'All' || category == _selectedCategory;
+                      return matchesSearch && matchesCategory;
                     }).toList();
 
                     return ListView.separated(

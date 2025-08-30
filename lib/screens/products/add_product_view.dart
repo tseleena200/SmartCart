@@ -28,7 +28,7 @@ class _AddProductViewState extends State<AddProductView> {
   final _statuses = ["Exclusive", "Popular", "New Arrival"];
 
   final List<String> _unitOptions = [
-    'pcs', 'pack', 'box', 'set', 'g', 'kg', 'ml', 'L'
+    'pcs', 'pack', 'box', 'set', 'g', 'kg', 'ml', 'L','fl oz'
   ];
 
   String convertToDirectImageLink(String originalUrl) {
@@ -69,6 +69,7 @@ class _AddProductViewState extends State<AddProductView> {
         'createdAt': FieldValue.serverTimestamp(),
         'unitValue': _unitValueController.text.trim(),
         'unitType': _selectedUnitType,
+        'isNewArrival': _status == "New Arrival",
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -173,7 +174,13 @@ class _AddProductViewState extends State<AddProductView> {
                       stream: FirebaseFirestore.instance.collection('Categories').snapshots(),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) return const CircularProgressIndicator();
-                        final categoryList = snapshot.data!.docs.map((doc) => doc['name'].toString()).toList();
+                        final categoryList = snapshot.data!.docs
+                            .map((doc) => doc['name'].toString())
+                            .where((name) => name.isNotEmpty)
+                            .toSet()
+                            .toList();
+
+
                         return DropdownButtonFormField<String>(
                           value: _selectedCategory,
                           items: categoryList
