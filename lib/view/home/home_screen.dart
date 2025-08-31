@@ -6,6 +6,7 @@ import 'package:onlinegroceries/view/home/tag_based_product_view.dart';
 import '../../common/color_extension.dart';
 import '../../common_widget/category_cell.dart';
 import '../../common_widget/product_cell.dart';
+import '../../services/recs_api.dart';
 import '../Notifications/notifications_view.dart';
 import '../explore/explore_screen.dart';
 import '../home/product_details_screen.dart';
@@ -76,6 +77,16 @@ class _HomeViewState extends State<HomeView> {
         .where('productName', isGreaterThanOrEqualTo: name)
         .where('productName', isLessThan: name + 'z')
         .snapshots();
+  }
+
+  Future<void> _refreshRecs() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      await RecsApi.refreshUserInstant(uid);
+    } catch (e) {
+      debugPrint("recs refresh failed: $e");
+    }
   }
 
   @override
@@ -349,6 +360,8 @@ class _HomeViewState extends State<HomeView> {
                                 'userName': FirebaseAuth.instance.currentUser?.displayName ?? "Unknown",
                               });
                             }
+                            // 🔁 trigger instant recommendations refresh
+                            await _refreshRecs();
                           },
                         );
                       },
@@ -390,6 +403,24 @@ class _HomeViewState extends State<HomeView> {
           stream: stream,
           builder: (context, snapshot) {
             if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+            // 🔹 ADD THIS BLOCK HERE
+            if (snapshot.data!.docs.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: Text(
+                    "NO RESULTS FOUND.",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              );
+            }
+            // 🔹 END ADD
+
             final docs = snapshot.data!.docs;
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -446,6 +477,8 @@ class _HomeViewState extends State<HomeView> {
                               'userName': FirebaseAuth.instance.currentUser?.displayName ?? "Unknown",
                             });
                           }
+                          // 🔁 trigger instant recommendations refresh
+                          await _refreshRecs();
                         },
                       );
                     },

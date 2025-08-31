@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../services/recs_api.dart'; // ← add
+import '../../common/color_extension.dart';
+
 class WriteReviewScreen extends StatefulWidget {
   final String productID;
   final String productName;
@@ -12,7 +15,6 @@ class WriteReviewScreen extends StatefulWidget {
     super.key,
     required this.productID,
     required this.productName,
-
   });
 
   @override
@@ -55,6 +57,15 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
     }
   }
 
+  // 🔁 tiny helper to refresh recommendations
+  Future<void> _refreshRecs() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      await RecsApi.refreshUserInstant(uid);
+    } catch (_) {}
+  }
+
   Future<void> _submitReview() async {
     final user = _auth.currentUser;
     if (user == null || _rating == 0.0) return;
@@ -82,19 +93,25 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
         await _firestore.collection('Reviews').add(data);
       }
 
+      // 🔁 refresh recs after submit/edit
+      await _refreshRecs();
+
       Get.back();
     } catch (e) {
       print("🔥 Error submitting review: $e");
       Get.snackbar("Error", "Could not submit review.");
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
-
 
   Future<void> _deleteReview() async {
     if (_isExistingReview && _docID != null) {
       await _firestore.collection('Reviews').doc(_docID).delete();
+
+      // 🔁 refresh recs after delete
+      await _refreshRecs();
+
       Get.snackbar("Deleted", "Your review has been deleted.");
     }
     Get.back();
@@ -105,8 +122,7 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Discard changes?"),
-        content:
-        const Text("Are you sure you want to go back without saving?"),
+        content: const Text("Are you sure you want to go back without saving?"),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(context).pop(false),

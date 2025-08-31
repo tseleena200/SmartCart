@@ -11,6 +11,9 @@ import '../../controllers/transaction_controller.dart';
 import 'error_screen.dart';
 import 'payment_method_view.dart';
 
+// 👇 import RecsApi
+import '../../services/recs_api.dart';
+
 class CheckoutView extends StatefulWidget {
   const CheckoutView({super.key});
 
@@ -35,7 +38,6 @@ class _CheckoutViewState extends State<CheckoutView> {
     {'label': 'Welcome Offer - 10% OFF', 'type': 'percent', 'value': 0.10},
     {'label': 'Seasonal \$5 OFF', 'type': 'flat', 'value': 5.0},
   ];
-
 
   @override
   void initState() {
@@ -72,7 +74,6 @@ class _CheckoutViewState extends State<CheckoutView> {
           .get();
       final txnCount = txnSnapshot.docs.length;
 
-      // Check if "Seasonal $5 OFF" was already used
       final seasonalUsed = txnSnapshot.docs.any(
             (doc) => doc['discountLabel'] == 'Seasonal \$5 OFF',
       );
@@ -101,7 +102,6 @@ class _CheckoutViewState extends State<CheckoutView> {
           });
         }
       } else {
-        // Apply any other valid discounts
         if (option['type'] == 'percent') {
           discountedTotal = originalCost - (originalCost * option['value']);
         } else if (option['type'] == 'flat') {
@@ -116,7 +116,6 @@ class _CheckoutViewState extends State<CheckoutView> {
       Get.snackbar("Error", "Failed to apply discount: $e");
     }
   }
-
 
   Future<void> submitOrder() async {
     final userId = _auth.currentUser?.uid;
@@ -134,7 +133,6 @@ class _CheckoutViewState extends State<CheckoutView> {
           (doc) => doc['discountLabel'] == 'Seasonal \$5 OFF',
     );
 
-// Double-check rules again
     if (selectedDiscountLabel == 'First 3 Orders - 15% OFF' && txnCount >= 3) {
       Get.snackbar("Invalid Discount", "First 3 Orders offer no longer valid.");
       return;
@@ -144,7 +142,6 @@ class _CheckoutViewState extends State<CheckoutView> {
       Get.snackbar("Invalid Discount", "Seasonal offer already used.");
       return;
     }
-
 
     if (paymentMethod == "Select Method") {
       showDialog(
@@ -171,6 +168,13 @@ class _CheckoutViewState extends State<CheckoutView> {
     );
 
     if (txnId != null) {
+      // ✅ refresh recs after a successful transaction
+      try {
+        await RecsApi.refreshUserInstant(userId);
+      } catch (e) {
+        debugPrint("recs refresh failed after checkout: $e");
+      }
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
@@ -179,7 +183,6 @@ class _CheckoutViewState extends State<CheckoutView> {
       });
     }
   }
-
 
   void showCartConfirmationModal() async {
     final userId = _auth.currentUser?.uid;

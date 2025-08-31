@@ -4,6 +4,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:onlinegroceries/reviews/review_sheet.dart';
 import '../../common/color_extension.dart';
+import '../../services/recs_api.dart'; // ← ADD
 
 class AllReviewsScreen extends StatelessWidget {
   final String productId;
@@ -16,6 +17,13 @@ class AllReviewsScreen extends StatelessWidget {
     required this.currentUserId,
     required this.productName,
   }) : super(key: key);
+
+  // ← ADD: tiny helper to trigger instant recs recompute
+  Future<void> _refreshRecs() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try { await RecsApi.refreshUserInstant(uid); } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,13 +45,11 @@ class AllReviewsScreen extends StatelessWidget {
                 if (snapshot.hasError) {
                   return const Center(child: Text('Error loading reviews.'));
                 }
-
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
                 final docs = snapshot.data?.docs ?? [];
-
                 if (docs.isEmpty) {
                   return const Center(child: Text('No reviews yet. Be the first to add one!'));
                 }
@@ -101,6 +107,9 @@ class AllReviewsScreen extends StatelessWidget {
                                       .doc(docs[index].id)
                                       .delete();
 
+                                  // ← ADD: refresh recs after deletion
+                                  await _refreshRecs();
+
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text("Review deleted successfully."),
@@ -147,8 +156,9 @@ class AllReviewsScreen extends StatelessWidget {
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
+                        onPressed: () async {
+                          // Wait for review screen to close
+                          await Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => WriteReviewScreen(
                                 productID: productId,
@@ -156,6 +166,8 @@ class AllReviewsScreen extends StatelessWidget {
                               ),
                             ),
                           );
+                          // ← ADD: refresh recs after submit/edit
+                          await _refreshRecs();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: TColor.primary,

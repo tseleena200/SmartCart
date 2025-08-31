@@ -27,7 +27,7 @@ class _RFIDScanOverlayState extends State<RFIDScanOverlay> {
     await _audioPlayer.play(AssetSource('audio/scanner.mp3'));
 
     //  Wait for scanning to complete (5 sec or your preferred duration)
-    await Future.delayed(const Duration(seconds: 5));
+    await Future.delayed(const Duration(seconds: 2));
 
     //  Stop the looped sound
     await _audioPlayer.stop();

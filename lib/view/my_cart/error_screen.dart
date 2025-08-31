@@ -40,7 +40,7 @@ class ErrorView extends StatelessWidget {
           ),
           const SizedBox(height: 40,),
           Text(
-            "Oops! Order Failed",
+            "Oops! Payment Failed",
             textAlign: TextAlign.center,
             style: TextStyle(
               color: TColor.primaryText,

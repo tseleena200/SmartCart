@@ -15,6 +15,15 @@ class ExploreDetailsView extends StatefulWidget {
 }
 
 class _ExploreDetailsViewState extends State<ExploreDetailsView> {
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _q = "";
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,14 +33,8 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Image.asset(
-            "assets/img/back.png",
-            width: 20,
-            height: 20,
-          ),
+          onPressed: () => Navigator.pop(context),
+          icon: Image.asset("assets/img/back.png", width: 20, height: 20),
         ),
         actions: [
           IconButton(
@@ -41,11 +44,7 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
                 MaterialPageRoute(builder: (context) => const FilterView()),
               );
             },
-            icon: Image.asset(
-              "assets/img/filter_ic.png",
-              width: 20,
-              height: 20,
-            ),
+            icon: Image.asset("assets/img/filter_ic.png", width: 20, height: 20),
           ),
         ],
         title: Text(
@@ -59,6 +58,7 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
       ),
       body: Column(
         children: [
+          // Route button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: SizedBox(
@@ -87,6 +87,48 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
               ),
             ),
           ),
+
+          // Search bar (local filter)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(color: Colors.black12.withOpacity(0.04), blurRadius: 6),
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14),
+                    child: Icon(Icons.search, color: Colors.grey),
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchCtrl,
+                      onChanged: (v) => setState(() => _q = v.trim()),
+                      decoration: const InputDecoration(
+                        hintText: "Search in this category",
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  if (_q.isNotEmpty)
+                    IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        setState(() => _q = "");
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          // Products grid
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -103,6 +145,31 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
 
                 final products = snapshot.data!.docs;
 
+                // Case-insensitive filter by productName
+                final filtered = _q.isEmpty
+                    ? products
+                    : products.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final name = (data["productName"] ?? "").toString();
+                  return name.toLowerCase().contains(_q.toLowerCase());
+                }).toList();
+
+                if (filtered.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 24),
+                    child: Center(
+                      child: Text(
+                        "NO RESULTS FOUND.",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
                 return GridView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -111,9 +178,9 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
                     crossAxisSpacing: 15,
                     mainAxisSpacing: 15,
                   ),
-                  itemCount: products.length,
+                  itemCount: filtered.length,
                   itemBuilder: (context, index) {
-                    final data = products[index].data() as Map<String, dynamic>;
+                    final data = filtered[index].data() as Map<String, dynamic>;
 
                     return ProductCell(
                       pObj: {
@@ -134,7 +201,6 @@ class _ExploreDetailsViewState extends State<ExploreDetailsView> {
                             builder: (_) => ProductDetails(product: data),
                           ),
                         );
-
                       },
                       onCart: () {},
                     );

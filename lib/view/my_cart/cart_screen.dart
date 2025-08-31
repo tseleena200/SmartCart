@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+
 import '../../controllers/cart_controller.dart';
 import '../../common/color_extension.dart';
 import '../rfid/rfid_scan_overlay.dart';
 import '../rfid/rfid_removal_overlay.dart';
 import 'checkout_screen.dart';
+import '../../services/recs_api.dart'; // ← recs API
 
 class MyCartView extends StatefulWidget {
   const MyCartView({super.key});
@@ -17,6 +19,14 @@ class MyCartView extends StatefulWidget {
 
 class _MyCartViewState extends State<MyCartView> {
   final CartController cartController = Get.put(CartController());
+
+  Future<void> _refreshRecs() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      await RecsApi.refreshUserInstant(uid);
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +105,8 @@ class _MyCartViewState extends State<MyCartView> {
                       for (int i = 0; i < quantity; i++) {
                         await cartController.removeProductFromCartByRFID(rfid);
                       }
+                      await _refreshRecs();
+
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -103,9 +115,13 @@ class _MyCartViewState extends State<MyCartView> {
                             action: SnackBarAction(
                               label: 'Undo',
                               onPressed: () {
-                                for (int i = 0; i < quantity; i++) {
-                                  cartController.addProductToCartByRFID(rfid);
-                                }
+                                () async {
+                                  for (int i = 0; i < quantity; i++) {
+                                    await cartController
+                                        .addProductToCartByRFID(rfid);
+                                  }
+                                  await _refreshRecs();
+                                }();
                               },
                             ),
                           ),
@@ -134,11 +150,14 @@ class _MyCartViewState extends State<MyCartView> {
                                 ),
                                 barrierDismissible: false,
                               );
+                              await _refreshRecs();
                             } else if (value == 'removeAll') {
                               for (int i = 0; i < quantity; i++) {
                                 await cartController
                                     .removeProductFromCartByRFID(rfid);
                               }
+                              await _refreshRecs();
+
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -147,10 +166,13 @@ class _MyCartViewState extends State<MyCartView> {
                                     action: SnackBarAction(
                                       label: 'Undo',
                                       onPressed: () {
-                                        for (int i = 0; i < quantity; i++) {
-                                          cartController
-                                              .addProductToCartByRFID(rfid);
-                                        }
+                                        () async {
+                                          for (int i = 0; i < quantity; i++) {
+                                            await cartController
+                                                .addProductToCartByRFID(rfid);
+                                          }
+                                          await _refreshRecs();
+                                        }();
                                       },
                                     ),
                                   ),
@@ -178,6 +200,7 @@ class _MyCartViewState extends State<MyCartView> {
                             ),
                             barrierDismissible: false,
                           );
+                          await _refreshRecs();
                         }
                             : null,
                         onIncrease: () async {
@@ -186,6 +209,7 @@ class _MyCartViewState extends State<MyCartView> {
                             barrierDismissible: false,
                           );
                           await cartController.addProductToCartByRFID(rfid);
+                          await _refreshRecs();
                         },
                       ),
                     ),
@@ -260,6 +284,7 @@ class _MyCartViewState extends State<MyCartView> {
                       ),
                       barrierDismissible: false,
                     );
+                    await _refreshRecs();
                   },
                 ),
                 ListTile(
@@ -271,6 +296,8 @@ class _MyCartViewState extends State<MyCartView> {
                     for (int i = 0; i < quantity; i++) {
                       await cartController.removeProductFromCartByRFID(rfid);
                     }
+                    await _refreshRecs();
+
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -279,9 +306,13 @@ class _MyCartViewState extends State<MyCartView> {
                           action: SnackBarAction(
                             label: 'Undo',
                             onPressed: () {
-                              for (int i = 0; i < quantity; i++) {
-                                cartController.addProductToCartByRFID(rfid);
-                              }
+                              () async {
+                                for (int i = 0; i < quantity; i++) {
+                                  await cartController
+                                      .addProductToCartByRFID(rfid);
+                                }
+                                await _refreshRecs();
+                              }();
                             },
                           ),
                         ),
@@ -381,7 +412,7 @@ class _CartItemCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: Colors.grey.shade500), // added
+        border: Border.all(color: Colors.grey.shade500),
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
@@ -492,8 +523,10 @@ class _ProductImage extends StatelessWidget {
         child: Image.network(
           url,
           fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) =>
-          const Icon(Icons.broken_image_outlined, size: 28, color: Colors.grey),
+          errorBuilder: (_, __, ___) => const Icon(
+              Icons.broken_image_outlined,
+              size: 28,
+              color: Colors.grey),
           loadingBuilder: (context, child, progress) {
             if (progress == null) return child;
             return const Center(child: CircularProgressIndicator(strokeWidth: 2));

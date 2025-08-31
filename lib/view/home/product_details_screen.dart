@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../controllers/favorite_controller.dart';
 import '../../reviews/all_reviews.dart';
+import '../../services/recs_api.dart';
 import '../rfid/rfid_removal_overlay.dart';
 import '../rfid/rfid_scan_overlay.dart';
 
@@ -68,6 +69,16 @@ class _ProductDetailsState extends State<ProductDetails> {
       setState(() {
         isFavorited = favSnap.exists;
       });
+    }
+  }
+
+  Future<void> _refreshRecs() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      await RecsApi.refreshUserInstant(uid);
+    } catch (e) {
+      debugPrint("recs refresh failed: $e");
     }
   }
 
@@ -206,6 +217,8 @@ class _ProductDetailsState extends State<ProductDetails> {
                               setState(() {
                                 isFavorited = !isFavorited;
                               });
+                              // 🔁 refresh recs
+                              await _refreshRecs();
                             }
                           }
 
@@ -404,6 +417,8 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                         await cartController.addProductToCartByRFID(rfidCode);
                         await _loadScannedCount();
+                        // 🔁 refresh recs after add-to-cart
+                        await _refreshRecs();
 
                         Get.snackbar(
                             "Scanned!", "Product added to cart successfully.",
@@ -471,6 +486,8 @@ class _ProductDetailsState extends State<ProductDetails> {
 
                                       // ✅ Refresh scanned count after dialog closes
                                       await _loadScannedCount();
+                                      // 🔁 refresh recs after add-to-cart
+                                      await _refreshRecs();
 
                                       Get.snackbar("Removed", "Product removed from cart.",
                                         backgroundColor: Colors.redAccent,

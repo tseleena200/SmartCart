@@ -30,7 +30,7 @@ class _RFIDRemovalOverlayState extends State<RFIDRemovalOverlay> {
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
       await _audioPlayer.play(AssetSource('audio/scanner.mp3'));
 
-      await Future.delayed(const Duration(seconds: 4));
+      await Future.delayed(const Duration(seconds: 2));
       await _audioPlayer.stop();
 
       //  Try to remove from cart, but don't crash if it fails

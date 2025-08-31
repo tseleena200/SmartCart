@@ -54,44 +54,41 @@ class _FavouriteViewState extends State<FavouriteView> {
                 itemCount: favorites.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 1),
                 itemBuilder: (context, index) {
-                  final fav = favorites[index].data() as Map<String, dynamic>;
-                  return Dismissible(
-                    key: Key(fav["productID"]),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      color: Colors.red.shade900,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    onDismissed: (_) {
-                      favoriteController.removeFromFavorites(fav["productID"]);
+                  final favData = favorites[index].data() as Map<String, dynamic>;
+                  final String productID = (favData["productID"] ?? "") as String;
+
+                  return FavouriteRow(
+                    pObj: {
+                      "productID": productID,
+                      "productName": favData["productName"] ?? "Unnamed",
+                      "imageURL": favData["imageURL"] ?? "",
+                      "finalPrice": (favData["finalPrice"] ?? 0),
+                      "category": favData["category"] ?? "In Stock",
                     },
-                    child: FavouriteRow(
-                      pObj: {
-                        "productName": fav["productName"] ?? "Unnamed",
-                        "imageURL": fav["imageURL"] ?? "",
-                        "finalPrice": (fav["finalPrice"] ?? 0).toDouble(),
-                        "category": fav["category"] ?? "In Stock",
-                      },
-                      onPressed: () {
-                        // TODO: handle add-to-cart logic
-                      },
-                    ),
+                    onPressed: () {
+                      // TODO: add-to-cart for this product
+                    },
+                    isFavorite: true, // in this screen, everything shown is already favorite
+                    onFavoriteToggle: () async {
+                      if (productID.isEmpty) return;
+                      await favoriteController.removeFromFavorites(productID);
+                      // If you also maintain Users.favorites array, update that inside controller.
+                    },
                   );
                 },
               );
             },
           ),
+
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: RoundButton(
               title: "Add All To Cart",
               onPressed: () {
-                // TODO: Implement add all to cart logic
+                // TODO: iterate favorites and add each to cart
               },
             ),
-          )
+          ),
         ],
       ),
     );
